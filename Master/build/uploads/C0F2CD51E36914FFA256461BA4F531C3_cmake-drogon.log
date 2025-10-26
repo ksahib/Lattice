@@ -1,0 +1,104 @@
+-- The C compiler identification is GNU 15.2.1
+-- The CXX compiler identification is GNU 15.2.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- compiler: GNU
+-- Performing Test COMPILER_HAS_HIDDEN_VISIBILITY
+-- Performing Test COMPILER_HAS_HIDDEN_VISIBILITY - Success
+-- Performing Test COMPILER_HAS_HIDDEN_INLINE_VISIBILITY
+-- Performing Test COMPILER_HAS_HIDDEN_INLINE_VISIBILITY - Success
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR - Success
+-- Looking for C++ include any
+-- Looking for C++ include any - found
+-- Looking for C++ include string_view
+-- Looking for C++ include string_view - found
+-- Looking for C++ include coroutine
+-- Looking for C++ include coroutine - not found
+CMake Deprecation Warning at trantor/CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Found OpenSSL: /usr/lib64/libcrypto.so (found version "3.2.4")
+-- Trantor using SSL library: OpenSSL
+-- Could NOT find c-ares (missing: C-ARES_INCLUDE_DIRS C-ARES_LIBRARIES) 
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- Looking for C++ include filesystem
+-- Looking for C++ include filesystem - found
+-- Performing Test CXX_FILESYSTEM_NO_LINK_NEEDED
+-- Performing Test CXX_FILESYSTEM_NO_LINK_NEEDED - Success
+-- Found std::filesystem
+-- use c++17
+-- Found Jsoncpp: /usr/include
+-- jsoncpp version:1.9.6
+-- yaml-cpp not used
+-- Found UUID: /lib64/libuuid.so
+-- Found Brotli: /usr/lib64/libbrotlidec.so
+-- Brotli found
+-- Could NOT find PostgreSQL (missing: PostgreSQL_LIBRARY PostgreSQL_INCLUDE_DIR) 
+-- Could NOT find pg (missing: PG_LIBRARIES PG_INCLUDE_DIRS) 
+-- MySql was not found.
+-- Ok! We find sqlite3!
+-- Could NOT find Hiredis (missing: HIREDIS_LIBRARY HIREDIS_INCLUDE_DIR) 
+-- Found ZLIB: /usr/lib64/libz.so (found version "1.3.1")
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/cmake.csp
+-- view classname:cmake
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/config_json.csp
+-- view classname:config_json
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/config_yaml.csp
+-- view classname:config_yaml
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/demoMain.csp
+-- view classname:demoMain
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/filter_cc.csp
+-- view classname:filter_cc
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/filter_h.csp
+-- view classname:filter_h
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/gitignore.csp
+-- view classname:gitignore
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/model_cc.csp
+-- view classname:model_cc
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/model_h.csp
+-- view classname:model_h
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/model_json.csp
+-- view classname:model_json
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/plugin_cc.csp
+-- view classname:plugin_cc
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/plugin_h.csp
+-- view classname:plugin_h
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/restful_controller_base_cc.csp
+-- view classname:restful_controller_base_cc
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/restful_controller_base_h.csp
+-- view classname:restful_controller_base_h
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/restful_controller_cc.csp
+-- view classname:restful_controller_cc
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/restful_controller_custom_cc.csp
+-- view classname:restful_controller_custom_cc
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/restful_controller_custom_h.csp
+-- view classname:restful_controller_custom_h
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/restful_controller_h.csp
+-- view classname:restful_controller_h
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/test_cmake.csp
+-- view classname:test_cmake
+-- cspFile:/home/kazisahib/drogon/drogon_ctl/templates/test_main.csp
+-- view classname:test_main
+-- bin:bin
+-- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
+-- Configuring done (5.1s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/kazisahib/drogon/build

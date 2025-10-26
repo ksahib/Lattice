@@ -1,0 +1,3 @@
+/home/kazisahib/dcs/Master/build/CMakeFiles/server.dir
+/home/kazisahib/dcs/Master/build/CMakeFiles/edit_cache.dir
+/home/kazisahib/dcs/Master/build/CMakeFiles/rebuild_cache.dir
