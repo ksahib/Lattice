@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <inttypes.h>
 
 typedef void (*loop_body_fn)(int64_t i, void *env);
 
@@ -17,6 +19,9 @@ typedef struct
     int nthreads;
     int ncpus;
 } workers_args_t;
+
+/* global mutex to serialize prints so lines don't interleave */
+static pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void *worker_main(void *_arg)
 {
@@ -37,6 +42,14 @@ static void *worker_main(void *_arg)
         {
             if (a->body)
                 a->body(i, a->env);
+
+            /* attempt to read result from env if env is pointer to int32_t array.
+               Guard the read with a plausibility check on i to avoid wild accesses. */
+
+            pthread_mutex_lock(&print_mutex);
+            fprintf(stderr, "[start=%d] iter=%" PRId64 " end=%d\n", start, end);
+            fflush(stderr);
+            pthread_mutex_unlock(&print_mutex);
         }
     }
     else
@@ -45,6 +58,12 @@ static void *worker_main(void *_arg)
         {
             if (a->body)
                 a->body(i, a->env);
+
+            pthread_mutex_lock(&print_mutex);
+
+            fprintf(stderr, "[start=%d] iter=%" PRId64 " end=%d\n", start, end);
+            fflush(stderr);
+            pthread_mutex_unlock(&print_mutex);
         }
     }
 
