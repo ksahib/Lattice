@@ -1,0 +1,17 @@
+{
+  "workers" : 
+  [
+    {
+      "address" : "192.168.1.101:50051",
+      "status" : "busy"
+    },
+    {
+      "address" : "192.168.1.101:50052",
+      "status" : "available"
+    },
+    {
+      "address" : "192.168.1.102:50052",
+      "status" : "available"
+    }
+  ]
+}

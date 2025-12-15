@@ -1,7 +1,8 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/server.dir/link.d"
   "CMakeFiles/server.dir/main.cpp.o"
   "CMakeFiles/server.dir/main.cpp.o.d"
+  "CMakeFiles/server.dir/worker_manager.cpp.o"
+  "CMakeFiles/server.dir/worker_manager.cpp.o.d"
   "server"
   "server.pdb"
 )

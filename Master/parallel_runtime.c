@@ -47,7 +47,7 @@ static void *worker_main(void *_arg)
                Guard the read with a plausibility check on i to avoid wild accesses. */
 
             pthread_mutex_lock(&print_mutex);
-            fprintf(stderr, "[start=%d] iter=%" PRId64 " end=%d\n", start, end);
+            fprintf(stderr, "[start=%" PRId64 "] iter=%" PRId64 " end=%" PRId64 "\n", start, i, end);
             fflush(stderr);
             pthread_mutex_unlock(&print_mutex);
         }
@@ -61,7 +61,7 @@ static void *worker_main(void *_arg)
 
             pthread_mutex_lock(&print_mutex);
 
-            fprintf(stderr, "[start=%d] iter=%" PRId64 " end=%d\n", start, end);
+            fprintf(stderr, "[start=%" PRId64 "] iter=%" PRId64 " end=%" PRId64 "\n", start, i, end);
             fflush(stderr);
             pthread_mutex_unlock(&print_mutex);
         }

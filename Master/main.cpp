@@ -8,8 +8,21 @@
 #include <cstdlib>
 #include <string>
 #include <fstream>
+#include <exception>
+
+#include "worker_manager.h"
 
 using namespace drogon;
+
+// Helper function to add CORS headers
+void addCorsHeaders(const HttpResponsePtr &resp)
+{
+    resp->addHeader("Access-Control-Allow-Origin", "*");
+    resp->addHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    resp->addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    resp->addHeader("Access-Control-Max-Age", "3600");
+}
+WorkerManager workerManager("./workers.json");
 
 int main()
 {
@@ -22,13 +35,403 @@ int main()
 
     std::filesystem::create_directories("./uploads");
 
+    std::cout << "Server starting on port 8080..." << std::endl;
+    
+    drogon::app().registerHandler(
+        "/register",
+        [](const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback)
+        {
+            Json::Value response;
+            
+            try {
+                // Handle OPTIONS preflight
+                if (req->getMethod() == drogon::Options)
+                {
+                    auto resp = HttpResponse::newHttpResponse();
+                    addCorsHeaders(resp);
+                    resp->setStatusCode(k200OK);
+                    callback(resp);
+                    return;
+                }
+                
+                if (req->getMethod() != drogon::Post)
+                {
+                    auto resp = HttpResponse::newHttpResponse();
+                    addCorsHeaders(resp);
+                    resp->setStatusCode(k405MethodNotAllowed);
+                    resp->setBody("Use POST method");
+                    callback(resp);
+                    return;
+                }
+                
+                Json::Reader reader;
+                Json::Value request_body;
+                
+                // Parse JSON body
+                std::string body = std::string(req->getBody());
+                if (!reader.parse(body, request_body))
+                {
+                    response["result"] = "error";
+                    response["message"] = "Invalid JSON";
+                    auto resp = HttpResponse::newHttpJsonResponse(response);
+                    addCorsHeaders(resp);
+                    callback(resp);
+                    return;
+                }
+                
+                // Extract IP and port
+                if (!request_body.isMember("address"))
+                {
+                    response["result"] = "error";
+                    response["message"] = "Missing 'address' field (format: 'IP:PORT')";
+                    auto resp = HttpResponse::newHttpJsonResponse(response);
+                    addCorsHeaders(resp);
+                    callback(resp);
+                    return;
+                }
+                
+                std::string address = request_body["address"].asString();
+                
+                // Validate format (simple check)
+                if (address.find(':') == std::string::npos)
+                {
+                    response["result"] = "error";
+                    response["message"] = "Invalid address format. Use 'IP:PORT' (e.g., '192.168.1.100:50051')";
+                    auto resp = HttpResponse::newHttpJsonResponse(response);
+                    addCorsHeaders(resp);
+                    callback(resp);
+                    return;
+                }
+                
+                // Register worker
+                bool success = workerManager.registerWorker(address);
+                
+                if (success)
+                {
+                    response["result"] = "ok";
+                    response["message"] = "Worker registered successfully";
+                    response["address"] = address;
+                    response["total_workers"] = static_cast<int>(workerManager.getWorkerCount());
+                    response["available_workers"] = static_cast<int>(workerManager.getAvailableWorkerCount());
+                }
+                else
+                {
+                    response["result"] = "error";
+                    response["message"] = "Failed to register worker";
+                }
+                
+                auto resp = HttpResponse::newHttpJsonResponse(response);
+                addCorsHeaders(resp);
+                callback(resp);
+                
+            } catch (const std::exception& e) {
+                response["result"] = "error";
+                response["message"] = std::string("Exception: ") + e.what();
+                auto resp = HttpResponse::newHttpJsonResponse(response);
+                addCorsHeaders(resp);
+                callback(resp);
+            }
+        },
+        {Post, Options});
+
+
+    drogon::app().registerHandler(
+        "/workers",
+        [](const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback)
+        {
+            Json::Value response;
+            Json::Value workers_array(Json::arrayValue);
+            
+            auto all_workers = workerManager.getAllWorkers();
+            for (const auto& worker : all_workers)
+            {
+                Json::Value worker_obj;
+                worker_obj["address"] = worker.address;
+                worker_obj["status"] = (worker.status == WorkerStatus::AVAILABLE) ? "available" : "busy";
+                workers_array.append(worker_obj);
+            }
+            
+            response["result"] = "ok";
+            response["workers"] = workers_array;
+            response["total"] = static_cast<int>(workerManager.getWorkerCount());
+            response["available"] = static_cast<int>(workerManager.getAvailableWorkerCount());
+            
+            auto resp = HttpResponse::newHttpJsonResponse(response);
+            addCorsHeaders(resp);
+            callback(resp);
+        },
+        {Get, Options});   
+
+    // Unregister Worker Endpoint
+    drogon::app().registerHandler(
+        "/unregister",
+        [](const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback)
+        {
+            Json::Value response;
+            
+            try {
+                // Handle OPTIONS preflight
+                if (req->getMethod() == drogon::Options)
+                {
+                    auto resp = HttpResponse::newHttpResponse();
+                    addCorsHeaders(resp);
+                    resp->setStatusCode(k200OK);
+                    callback(resp);
+                    return;
+                }
+                
+                if (req->getMethod() != drogon::Post)
+                {
+                    auto resp = HttpResponse::newHttpResponse();
+                    addCorsHeaders(resp);
+                    resp->setStatusCode(k405MethodNotAllowed);
+                    resp->setBody("Use POST method");
+                    callback(resp);
+                    return;
+                }
+                
+                Json::Reader reader;
+                Json::Value request_body;
+                
+                // Parse JSON body
+                std::string body = std::string(req->getBody());
+                if (!reader.parse(body, request_body))
+                {
+                    response["result"] = "error";
+                    response["message"] = "Invalid JSON";
+                    auto resp = HttpResponse::newHttpJsonResponse(response);
+                    addCorsHeaders(resp);
+                    callback(resp);
+                    return;
+                }
+                
+                // Extract address
+                if (!request_body.isMember("address"))
+                {
+                    response["result"] = "error";
+                    response["message"] = "Missing 'address' field";
+                    auto resp = HttpResponse::newHttpJsonResponse(response);
+                    addCorsHeaders(resp);
+                    callback(resp);
+                    return;
+                }
+                
+                std::string address = request_body["address"].asString();
+                
+                // Unregister worker
+                bool success = workerManager.unregisterWorker(address);
+                
+                if (success)
+                {
+                    response["result"] = "ok";
+                    response["message"] = "Worker unregistered successfully";
+                    response["address"] = address;
+                    response["total_workers"] = static_cast<int>(workerManager.getWorkerCount());
+                }
+                else
+                {
+                    response["result"] = "error";
+                    response["message"] = "Worker not found or failed to unregister";
+                }
+                
+                auto resp = HttpResponse::newHttpJsonResponse(response);
+                addCorsHeaders(resp);
+                callback(resp);
+                
+            } catch (const std::exception& e) {
+                response["result"] = "error";
+                response["message"] = std::string("Exception: ") + e.what();
+                auto resp = HttpResponse::newHttpJsonResponse(response);
+                addCorsHeaders(resp);
+                callback(resp);
+            }
+        },
+        {Post, Options});
+
+    // Set Worker Status Endpoint
+    drogon::app().registerHandler(
+        "/status",
+        [](const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback)
+        {
+            Json::Value response;
+            
+            try {
+                // Handle OPTIONS preflight
+                if (req->getMethod() == drogon::Options)
+                {
+                    auto resp = HttpResponse::newHttpResponse();
+                    addCorsHeaders(resp);
+                    resp->setStatusCode(k200OK);
+                    callback(resp);
+                    return;
+                }
+                
+                if (req->getMethod() != drogon::Post)
+                {
+                    auto resp = HttpResponse::newHttpResponse();
+                    addCorsHeaders(resp);
+                    resp->setStatusCode(k405MethodNotAllowed);
+                    resp->setBody("Use POST method");
+                    callback(resp);
+                    return;
+                }
+                
+                Json::Reader reader;
+                Json::Value request_body;
+                
+                // Parse JSON body
+                std::string body = std::string(req->getBody());
+                if (!reader.parse(body, request_body))
+                {
+                    response["result"] = "error";
+                    response["message"] = "Invalid JSON";
+                    auto resp = HttpResponse::newHttpJsonResponse(response);
+                    addCorsHeaders(resp);
+                    callback(resp);
+                    return;
+                }
+                
+                // Extract address and status
+                if (!request_body.isMember("address") || !request_body.isMember("status"))
+                {
+                    response["result"] = "error";
+                    response["message"] = "Missing 'address' or 'status' field";
+                    auto resp = HttpResponse::newHttpJsonResponse(response);
+                    addCorsHeaders(resp);
+                    callback(resp);
+                    return;
+                }
+                
+                std::string address = request_body["address"].asString();
+                std::string status_str = request_body["status"].asString();
+                
+                // Validate status
+                WorkerStatus status;
+                if (status_str == "available" || status_str == "AVAILABLE")
+                {
+                    status = WorkerStatus::AVAILABLE;
+                }
+                else if (status_str == "busy" || status_str == "BUSY")
+                {
+                    status = WorkerStatus::BUSY;
+                }
+                else
+                {
+                    response["result"] = "error";
+                    response["message"] = "Invalid status. Use 'available' or 'busy'";
+                    auto resp = HttpResponse::newHttpJsonResponse(response);
+                    addCorsHeaders(resp);
+                    callback(resp);
+                    return;
+                }
+                
+                // Set worker status
+                bool success = workerManager.setWorkerStatus(address, status);
+                
+                if (success)
+                {
+                    response["result"] = "ok";
+                    response["message"] = "Worker status updated successfully";
+                    response["address"] = address;
+                    response["status"] = status_str;
+                }
+                else
+                {
+                    response["result"] = "error";
+                    response["message"] = "Worker not found";
+                }
+                
+                auto resp = HttpResponse::newHttpJsonResponse(response);
+                addCorsHeaders(resp);
+                callback(resp);
+                
+            } catch (const std::exception& e) {
+                response["result"] = "error";
+                response["message"] = std::string("Exception: ") + e.what();
+                auto resp = HttpResponse::newHttpJsonResponse(response);
+                addCorsHeaders(resp);
+                callback(resp);
+            }
+        },
+        {Post, Options});
+
+    // Get Next Available Worker Endpoint (for scheduling)
+    drogon::app().registerHandler(
+        "/next-worker",
+        [](const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback)
+        {
+            Json::Value response;
+            
+            try {
+                if (req->getMethod() == drogon::Options)
+                {
+                    auto resp = HttpResponse::newHttpResponse();
+                    addCorsHeaders(resp);
+                    resp->setStatusCode(k200OK);
+                    callback(resp);
+                    return;
+                }
+                
+                if (req->getMethod() != drogon::Get)
+                {
+                    auto resp = HttpResponse::newHttpResponse();
+                    addCorsHeaders(resp);
+                    resp->setStatusCode(k405MethodNotAllowed);
+                    resp->setBody("Use GET method");
+                    callback(resp);
+                    return;
+                }
+                
+                // Get next available worker (round-robin)
+                std::string next_worker = workerManager.getNextAvailableWorker();
+                
+                if (!next_worker.empty())
+                {
+                    response["result"] = "ok";
+                    response["address"] = next_worker;
+                    response["message"] = "Next available worker selected";
+                }
+                else
+                {
+                    response["result"] = "error";
+                    response["message"] = "No available workers";
+                }
+                
+                response["total_workers"] = static_cast<int>(workerManager.getWorkerCount());
+                response["available_workers"] = static_cast<int>(workerManager.getAvailableWorkerCount());
+                
+                auto resp = HttpResponse::newHttpJsonResponse(response);
+                addCorsHeaders(resp);
+                callback(resp);
+                
+            } catch (const std::exception& e) {
+                response["result"] = "error";
+                response["message"] = std::string("Exception: ") + e.what();
+                auto resp = HttpResponse::newHttpJsonResponse(response);
+                addCorsHeaders(resp);
+                callback(resp);
+            }
+        },
+        {Get, Options});
+
+    // Handle OPTIONS preflight requests
     drogon::app().registerHandler(
         "/upload",
         [](const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback)
         {
+            if (req->getMethod() == drogon::Options)
+            {
+                auto resp = HttpResponse::newHttpResponse();
+                addCorsHeaders(resp);
+                resp->setStatusCode(k200OK);
+                callback(resp);
+                return;
+            }
+            
             if (req->getMethod() != drogon::Post)
             {
                 auto resp = HttpResponse::newHttpResponse();
+                addCorsHeaders(resp);
                 resp->setStatusCode(k405MethodNotAllowed);
                 resp->setBody("Use POST multipart/form-data");
                 callback(resp);
@@ -41,7 +444,9 @@ int main()
                 Json::Value j;
                 j["result"] = "parse_error";
                 j["message"] = "Failed to parse multipart/form-data";
-                callback(HttpResponse::newHttpJsonResponse(j));
+                auto resp = HttpResponse::newHttpJsonResponse(j);
+                addCorsHeaders(resp);
+                callback(resp);
                 return;
             }
 
@@ -59,13 +464,13 @@ int main()
                 try
                 {
                     f.saveAs(savedPath);
-                    std::string cmd = "clang++ -O1 -S -emit-llvm -o " + savedPath + ".ll " + savedPath;
+                    std::string cmd = "clang++-20 -O1 -S -emit-llvm -o " + savedPath + ".ll " + savedPath;
                     int ret = std::system(cmd.c_str());
                     if (ret != 0)
                     {
                         throw std::runtime_error("Failed to generate LLVM IR");
                     }
-                    std::string llvm_passes = "opt \
+                    std::string llvm_passes = "opt-20 \
     -passes='mem2reg,loop-simplify,lcssa,simplifycfg' \
     -S " + savedPath +
                                               ".ll " + "-o " + savedPath + ".opt.ll";
@@ -74,7 +479,7 @@ int main()
                     {
                         throw std::runtime_error("Failed to optimize LLVM IR");
                     }
-                    std::string pdg_pass = "opt -load-pass-plugin /home/kazisahib/dcs/Master/libPDGPass.so \
+                    std::string pdg_pass = "opt-20 -load-pass-plugin /home/niloy/vs_code/course/cse299/Lattice/Master/libPDGPass.so \
     -passes='pdg-builder' \
     -S " + savedPath + ".opt.ll " + "-o " + savedPath +
                                            ".opt.ll";
@@ -85,8 +490,8 @@ int main()
                         throw std::runtime_error("Failed to generate PDG");
                     }
 
-                    const std::string OPT = "/usr/bin/opt"; // set to `which opt` if different
-                    const std::string PLUGIN = "/home/kazisahib/dcs/Master/libLoopOutliner.so";
+                    const std::string OPT = "/usr/bin/opt-20"; // set to `which opt` if different
+                    const std::string PLUGIN = "/home/niloy/vs_code/course/cse299/Lattice/Master/libLoopOutliner.so";
                     std::string loop_outline_pass =
                         OPT + " -load-pass-plugin=" + PLUGIN +
                         " -passes='function(loop-outliner)' -S " + savedPath + ".opt.ll -o " + savedPath + ".opt.ll"
@@ -99,7 +504,7 @@ int main()
                     }
 
                     std::string final_pass =
-                        "clang++ -O2 " + savedPath + ".opt.ll /home/kazisahib/dcs/Master/parallel_runtime.o -o runprog -lpthread";
+                        "clang++ -O2 " + savedPath + ".opt.ll /home/niloy/vs_code/course/cse299/Lattice/Master/parallel_runtime.o -o runprog -lpthread";
 
                     int ret5 = std::system(final_pass.c_str());
                     if (ret5 != 0)
@@ -122,7 +527,7 @@ int main()
                     //     // Set LD_LIBRARY_PATH to the directory where your LLVM shared libs live.
                     //     // Adjust if your llvm libs are under /usr/lib/llvm-14/lib or similar.
                     //     const std::string LLVM_LIB_DIR = "/usr/lib/llvm-14/lib";
-
+             
                     //     // Log file
                     //     const std::string LOG = "/tmp/opt_run.log";
 
@@ -200,9 +605,11 @@ int main()
                 out["form_params"][p.first] = p.second;
             }
 
-            callback(HttpResponse::newHttpJsonResponse(out));
+            auto resp = HttpResponse::newHttpJsonResponse(out);
+            addCorsHeaders(resp);
+            callback(resp);
         },
-        {Post});
+        {Post, Options});
 
     drogon::app().run();
     return 0;

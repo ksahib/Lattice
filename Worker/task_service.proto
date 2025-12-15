@@ -1,0 +1,28 @@
+
+syntax = "proto3";
+
+package task;
+
+service TaskService {
+  rpc ExecuteTask(TaskRequest) returns (TaskResponse);
+}
+
+message TaskRequest {
+  int64 task_id = 1;
+  int64 start = 2;
+  int64 end = 3;
+  int64 step = 4;
+  bytes environment_data = 5;      // Serialized environment struct
+  uint64 environment_size = 6;      // Size of environment struct
+  string function_name = 7;         // "outlined_main_loopbody"
+}
+
+message TaskResponse {
+  int64 task_id = 1;
+  bool success = 2;
+  bytes result_data = 3;            // Serialized results (updated environment)
+  uint64 result_size = 4;           // Size of result data
+  string error_message = 5;
+  map<int64, bytes> iteration_outputs = 6;  // Per-iteration outputs if needed
+}
+

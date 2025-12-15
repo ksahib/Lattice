@@ -31,13 +31,36 @@ class _FileUploadPageState extends State<FileUploadPage> {
   final String serverUrl = 'http://127.0.0.1:8080/upload';
 
   Future<void> pickFile() async {
-    final res = await FilePicker.platform.pickFiles(withData: true);
-    if (res == null || res.files.isEmpty) return;
-    setState(() {
-      _picked = res.files.first;
-      _responseJson = null;
-      _status = 'ready';
-    });
+    try {
+      final res = await FilePicker.platform.pickFiles(
+        withData: true,  // This ensures bytes are loaded
+        type: FileType.custom,
+        allowedExtensions: ['cpp', 'c', 'h', 'hpp', 'cc', 'cxx'],  // C++ file types
+      );
+      if (res == null || res.files.isEmpty) return;
+      
+      final file = res.files.first;
+      
+      // On web, ensure bytes are available
+      if (kIsWeb && file.bytes == null) {
+        setState(() {
+          _status = 'error: Could not read file bytes on web';
+          _responseJson = {'error': 'File bytes are null. Please try again.'};
+        });
+        return;
+      }
+      
+      setState(() {
+        _picked = file;
+        _responseJson = null;
+        _status = 'ready';
+      });
+    } catch (e) {
+      setState(() {
+        _status = 'error';
+        _responseJson = {'error': e.toString()};
+      });
+    }
   }
 
   Future<void> upload() async {
@@ -51,13 +74,23 @@ class _FileUploadPageState extends State<FileUploadPage> {
       final uri = Uri.parse(serverUrl);
       final request = http.MultipartRequest('POST', uri);
 
+      // Use bytes if available (web or mobile with bytes)
       if (kIsWeb || (_picked!.bytes != null)) {
+        if (_picked!.bytes == null) {
+          throw Exception('File bytes are null. Cannot upload.');
+        }
         final bytes = _picked!.bytes!;
-        final filename = p.basename(_picked!.name);
+        final filename = _picked!.name.isNotEmpty 
+            ? _picked!.name 
+            : 'uploaded_file.cpp';
         request.files.add(
           http.MultipartFile.fromBytes('file', bytes, filename: filename),
         );
       } else {
+        // Desktop/mobile with file path
+        if (_picked!.path == null) {
+          throw Exception('File path is null. Cannot upload.');
+        }
         final path = _picked!.path!;
         final filename = p.basename(path);
         request.files.add(
@@ -98,7 +131,12 @@ class _FileUploadPageState extends State<FileUploadPage> {
         Text('Name: ${_picked!.name}'),
         if (_picked!.size != null) Text('Size: ${_picked!.size} bytes'),
         if (_picked!.extension != null) Text('Ext: ${_picked!.extension}'),
-        if (_picked!.path != null) Text('Path: ${_picked!.path}'),
+        if (!kIsWeb && _picked!.path != null) 
+          Text('Path: ${_picked!.path}'),
+        if (kIsWeb) 
+          Text('Platform: Web (using file bytes)'),
+        if (_picked!.bytes != null) 
+          Text('Bytes loaded: ${_picked!.bytes!.length} bytes'),
       ],
     );
   }

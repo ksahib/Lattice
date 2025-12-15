@@ -6,5 +6,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Drogon REQUIRED CONFIG)
 
-add_executable(server main.cpp)
+add_executable(server main.cpp worker_manager.cpp)
 target_link_libraries(server PRIVATE Drogon::Drogon)
