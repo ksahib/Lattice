@@ -779,6 +779,7 @@ class TaskRequest final : public ::google::protobuf::Message
     kFunctionNameFieldNumber = 7,
     kIrDataFieldNumber = 8,
     kIrFormatFieldNumber = 9,
+    kEnvMetadataJsonFieldNumber = 11,
     kTaskIdFieldNumber = 1,
     kStartFieldNumber = 2,
     kEndFieldNumber = 3,
@@ -866,6 +867,22 @@ class TaskRequest final : public ::google::protobuf::Message
   std::string* _internal_mutable_ir_format();
 
   public:
+  // string env_metadata_json = 11;
+  void clear_env_metadata_json() ;
+  const std::string& env_metadata_json() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_env_metadata_json(Arg_&& arg, Args_... args);
+  std::string* mutable_env_metadata_json();
+  PROTOBUF_NODISCARD std::string* release_env_metadata_json();
+  void set_allocated_env_metadata_json(std::string* value);
+
+  private:
+  const std::string& _internal_env_metadata_json() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_env_metadata_json(
+      const std::string& value);
+  std::string* _internal_mutable_env_metadata_json();
+
+  public:
   // int64 task_id = 1;
   void clear_task_id() ;
   ::int64_t task_id() const;
@@ -921,8 +938,8 @@ class TaskRequest final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      4, 10, 1,
-      55, 2>
+      4, 11, 1,
+      72, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -944,6 +961,7 @@ class TaskRequest final : public ::google::protobuf::Message
     ::google::protobuf::internal::ArenaStringPtr function_name_;
     ::google::protobuf::internal::ArenaStringPtr ir_data_;
     ::google::protobuf::internal::ArenaStringPtr ir_format_;
+    ::google::protobuf::internal::ArenaStringPtr env_metadata_json_;
     ::int64_t task_id_;
     ::int64_t start_;
     ::int64_t end_;
@@ -1321,6 +1339,54 @@ inline ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>*
 TaskRequest::_internal_mutable_arrays() {
   ::google::protobuf::internal::TSanRead(&_impl_);
   return &_impl_.arrays_;
+}
+
+// string env_metadata_json = 11;
+inline void TaskRequest::clear_env_metadata_json() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.env_metadata_json_.ClearToEmpty();
+}
+inline const std::string& TaskRequest::env_metadata_json() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:task.TaskRequest.env_metadata_json)
+  return _internal_env_metadata_json();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void TaskRequest::set_env_metadata_json(Arg_&& arg,
+                                                     Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.env_metadata_json_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  // @@protoc_insertion_point(field_set:task.TaskRequest.env_metadata_json)
+}
+inline std::string* TaskRequest::mutable_env_metadata_json() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_env_metadata_json();
+  // @@protoc_insertion_point(field_mutable:task.TaskRequest.env_metadata_json)
+  return _s;
+}
+inline const std::string& TaskRequest::_internal_env_metadata_json() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.env_metadata_json_.Get();
+}
+inline void TaskRequest::_internal_set_env_metadata_json(const std::string& value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.env_metadata_json_.Set(value, GetArena());
+}
+inline std::string* TaskRequest::_internal_mutable_env_metadata_json() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.env_metadata_json_.Mutable( GetArena());
+}
+inline std::string* TaskRequest::release_env_metadata_json() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:task.TaskRequest.env_metadata_json)
+  return _impl_.env_metadata_json_.Release();
+}
+inline void TaskRequest::set_allocated_env_metadata_json(std::string* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.env_metadata_json_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.env_metadata_json_.IsDefault()) {
+    _impl_.env_metadata_json_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:task.TaskRequest.env_metadata_json)
 }
 
 // -------------------------------------------------------------------

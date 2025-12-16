@@ -98,7 +98,7 @@ static void debug_dump_env_worker(const std::string& label, void* env, size_t en
     }
 }
 
-static void load_env_metadata(const std::string* json_override = nullptr) {
+static void load_env_metadata(const std::string* json_override) {
     std::lock_guard<std::mutex> lock(g_env_meta_mutex);
     
     // If already loaded, skip
@@ -174,7 +174,8 @@ class TaskServiceImpl final : public TaskService::Service {
                    std::min(env_size, request->environment_data().size()));
 
             // Load metadata from request (if provided) or fallback to file
-            if (request->has_env_metadata_json() && !request->env_metadata_json().empty()) {
+            // In proto3, string fields are always present (empty if not set)
+            if (!request->env_metadata_json().empty()) {
                 load_env_metadata(&request->env_metadata_json());
             } else {
                 load_env_metadata(nullptr);  // fallback to file

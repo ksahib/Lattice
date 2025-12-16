@@ -123,6 +123,9 @@ inline constexpr TaskRequest::Impl_::Impl_(
         ir_format_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
+        env_metadata_json_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
         task_id_{::int64_t{0}},
         start_{::int64_t{0}},
         end_{::int64_t{0}},
@@ -175,6 +178,7 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::task::TaskRequest, _impl_.ir_data_),
         PROTOBUF_FIELD_OFFSET(::task::TaskRequest, _impl_.ir_format_),
         PROTOBUF_FIELD_OFFSET(::task::TaskRequest, _impl_.arrays_),
+        PROTOBUF_FIELD_OFFSET(::task::TaskRequest, _impl_.env_metadata_json_),
         PROTOBUF_FIELD_OFFSET(::task::TaskResponse_IterationOutputsEntry_DoNotUse, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::task::TaskResponse_IterationOutputsEntry_DoNotUse, _internal_metadata_),
         ~0u,  // no _extensions_
@@ -218,9 +222,9 @@ const ::uint32_t
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, -1, -1, sizeof(::task::TaskRequest)},
-        {18, 28, -1, sizeof(::task::TaskResponse_IterationOutputsEntry_DoNotUse)},
-        {30, -1, -1, sizeof(::task::TaskResponse)},
-        {45, -1, -1, sizeof(::task::EnvArrayField)},
+        {19, 29, -1, sizeof(::task::TaskResponse_IterationOutputsEntry_DoNotUse)},
+        {31, -1, -1, sizeof(::task::TaskResponse)},
+        {46, -1, -1, sizeof(::task::EnvArrayField)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
     &::task::_TaskRequest_default_instance_._instance,
@@ -230,29 +234,30 @@ static const ::_pb::Message* const file_default_instances[] = {
 };
 const char descriptor_table_protodef_task_5fservice_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
-    "\n\022task_service.proto\022\004task\"\334\001\n\013TaskReque"
+    "\n\022task_service.proto\022\004task\"\367\001\n\013TaskReque"
     "st\022\017\n\007task_id\030\001 \001(\003\022\r\n\005start\030\002 \001(\003\022\013\n\003en"
     "d\030\003 \001(\003\022\014\n\004step\030\004 \001(\003\022\030\n\020environment_dat"
     "a\030\005 \001(\014\022\030\n\020environment_size\030\006 \001(\004\022\025\n\rfun"
     "ction_name\030\007 \001(\t\022\017\n\007ir_data\030\010 \001(\014\022\021\n\tir_"
     "format\030\t \001(\t\022#\n\006arrays\030\n \003(\0132\023.task.EnvA"
-    "rrayField\"\224\002\n\014TaskResponse\022\017\n\007task_id\030\001 "
-    "\001(\003\022\017\n\007success\030\002 \001(\010\022\023\n\013result_data\030\003 \001("
-    "\014\022\023\n\013result_size\030\004 \001(\004\022\025\n\rerror_message\030"
-    "\005 \001(\t\022C\n\021iteration_outputs\030\006 \003(\0132(.task."
-    "TaskResponse.IterationOutputsEntry\022#\n\006ar"
-    "rays\030\007 \003(\0132\023.task.EnvArrayField\0327\n\025Itera"
-    "tionOutputsEntry\022\013\n\003key\030\001 \001(\003\022\r\n\005value\030\002"
-    " \001(\014:\0028\001\"B\n\rEnvArrayField\022\023\n\013field_index"
-    "\030\001 \001(\r\022\016\n\006length\030\002 \001(\004\022\014\n\004data\030\003 \001(\0142C\n\013"
-    "TaskService\0224\n\013ExecuteTask\022\021.task.TaskRe"
-    "quest\032\022.task.TaskResponseb\006proto3"
+    "rrayField\022\031\n\021env_metadata_json\030\013 \001(\t\"\224\002\n"
+    "\014TaskResponse\022\017\n\007task_id\030\001 \001(\003\022\017\n\007succes"
+    "s\030\002 \001(\010\022\023\n\013result_data\030\003 \001(\014\022\023\n\013result_s"
+    "ize\030\004 \001(\004\022\025\n\rerror_message\030\005 \001(\t\022C\n\021iter"
+    "ation_outputs\030\006 \003(\0132(.task.TaskResponse."
+    "IterationOutputsEntry\022#\n\006arrays\030\007 \003(\0132\023."
+    "task.EnvArrayField\0327\n\025IterationOutputsEn"
+    "try\022\013\n\003key\030\001 \001(\003\022\r\n\005value\030\002 \001(\014:\0028\001\"B\n\rE"
+    "nvArrayField\022\023\n\013field_index\030\001 \001(\r\022\016\n\006len"
+    "gth\030\002 \001(\004\022\014\n\004data\030\003 \001(\0142C\n\013TaskService\0224"
+    "\n\013ExecuteTask\022\021.task.TaskRequest\032\022.task."
+    "TaskResponseb\006proto3"
 };
 static ::absl::once_flag descriptor_table_task_5fservice_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_task_5fservice_2eproto = {
     false,
     false,
-    673,
+    700,
     descriptor_table_protodef_task_5fservice_2eproto,
     "task_service.proto",
     &descriptor_table_task_5fservice_2eproto_once,
@@ -289,6 +294,7 @@ inline PROTOBUF_NDEBUG_INLINE TaskRequest::Impl_::Impl_(
         function_name_(arena, from.function_name_),
         ir_data_(arena, from.ir_data_),
         ir_format_(arena, from.ir_format_),
+        env_metadata_json_(arena, from.env_metadata_json_),
         _cached_size_{0} {}
 
 TaskRequest::TaskRequest(
@@ -322,6 +328,7 @@ inline PROTOBUF_NDEBUG_INLINE TaskRequest::Impl_::Impl_(
         function_name_(arena),
         ir_data_(arena),
         ir_format_(arena),
+        env_metadata_json_(arena),
         _cached_size_{0} {}
 
 inline void TaskRequest::SharedCtor(::_pb::Arena* arena) {
@@ -345,6 +352,7 @@ inline void TaskRequest::SharedDtor(MessageLite& self) {
   this_._impl_.function_name_.Destroy();
   this_._impl_.ir_data_.Destroy();
   this_._impl_.ir_format_.Destroy();
+  this_._impl_.env_metadata_json_.Destroy();
   this_._impl_.~Impl_();
 }
 
@@ -396,15 +404,15 @@ const ::google::protobuf::internal::ClassData* TaskRequest::GetClassData() const
   return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<4, 10, 1, 55, 2> TaskRequest::_table_ = {
+const ::_pbi::TcParseTable<4, 11, 1, 72, 2> TaskRequest::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    10, 120,  // max_field_number, fast_idx_mask
+    11, 120,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294966272,  // skipmap
+    4294965248,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    10,  // num_field_entries
+    11,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
     _class_data_.base(),
@@ -445,7 +453,9 @@ const ::_pbi::TcParseTable<4, 10, 1, 55, 2> TaskRequest::_table_ = {
     // repeated .task.EnvArrayField arrays = 10;
     {::_pbi::TcParser::FastMtR1,
      {82, 63, 0, PROTOBUF_FIELD_OFFSET(TaskRequest, _impl_.arrays_)}},
-    {::_pbi::TcParser::MiniParse, {}},
+    // string env_metadata_json = 11;
+    {::_pbi::TcParser::FastUS1,
+     {90, 63, 0, PROTOBUF_FIELD_OFFSET(TaskRequest, _impl_.env_metadata_json_)}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
     {::_pbi::TcParser::MiniParse, {}},
@@ -483,13 +493,17 @@ const ::_pbi::TcParseTable<4, 10, 1, 55, 2> TaskRequest::_table_ = {
     // repeated .task.EnvArrayField arrays = 10;
     {PROTOBUF_FIELD_OFFSET(TaskRequest, _impl_.arrays_), 0, 0,
     (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+    // string env_metadata_json = 11;
+    {PROTOBUF_FIELD_OFFSET(TaskRequest, _impl_.env_metadata_json_), 0, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
   }}, {{
     {::_pbi::TcParser::GetTable<::task::EnvArrayField>()},
   }}, {{
-    "\20\0\0\0\0\0\0\15\0\11\0\0\0\0\0\0"
+    "\20\0\0\0\0\0\0\15\0\11\0\21\0\0\0\0"
     "task.TaskRequest"
     "function_name"
     "ir_format"
+    "env_metadata_json"
   }},
 };
 
@@ -505,6 +519,7 @@ PROTOBUF_NOINLINE void TaskRequest::Clear() {
   _impl_.function_name_.ClearToEmpty();
   _impl_.ir_data_.ClearToEmpty();
   _impl_.ir_format_.ClearToEmpty();
+  _impl_.env_metadata_json_.ClearToEmpty();
   ::memset(&_impl_.task_id_, 0, static_cast<::size_t>(
       reinterpret_cast<char*>(&_impl_.environment_size_) -
       reinterpret_cast<char*>(&_impl_.task_id_)) + sizeof(_impl_.environment_size_));
@@ -600,6 +615,14 @@ PROTOBUF_NOINLINE void TaskRequest::Clear() {
                     target, stream);
           }
 
+          // string env_metadata_json = 11;
+          if (!this_._internal_env_metadata_json().empty()) {
+            const std::string& _s = this_._internal_env_metadata_json();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "task.TaskRequest.env_metadata_json");
+            target = stream->WriteStringMaybeAliased(11, _s, target);
+          }
+
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -654,6 +677,11 @@ PROTOBUF_NOINLINE void TaskRequest::Clear() {
               total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                               this_._internal_ir_format());
             }
+            // string env_metadata_json = 11;
+            if (!this_._internal_env_metadata_json().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_env_metadata_json());
+            }
             // int64 task_id = 1;
             if (this_._internal_task_id() != 0) {
               total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
@@ -706,6 +734,9 @@ void TaskRequest::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   if (!from._internal_ir_format().empty()) {
     _this->_internal_set_ir_format(from._internal_ir_format());
   }
+  if (!from._internal_env_metadata_json().empty()) {
+    _this->_internal_set_env_metadata_json(from._internal_env_metadata_json());
+  }
   if (from._internal_task_id() != 0) {
     _this->_impl_.task_id_ = from._impl_.task_id_;
   }
@@ -742,6 +773,7 @@ void TaskRequest::InternalSwap(TaskRequest* PROTOBUF_RESTRICT other) {
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.function_name_, &other->_impl_.function_name_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.ir_data_, &other->_impl_.ir_data_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.ir_format_, &other->_impl_.ir_format_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.env_metadata_json_, &other->_impl_.env_metadata_json_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(TaskRequest, _impl_.environment_size_)
       + sizeof(TaskRequest::_impl_.environment_size_)
