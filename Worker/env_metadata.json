@@ -1,9 +1,7 @@
 {
-  "struct_size": 32,
+  "struct_size": 16,
   "fields": [
     {"index": 0, "offset": 0, "kind": "FIXED_ARRAY", "elem_size": 4, "len_field": -1, "fixed_length": 6},
-    {"index": 1, "offset": 8, "kind": "FIXED_ARRAY", "elem_size": 4, "len_field": -1, "fixed_length": 6},
-    {"index": 2, "offset": 16, "kind": "FIXED_ARRAY", "elem_size": 4, "len_field": -1, "fixed_length": 6},
-    {"index": 3, "offset": 24, "kind": "SCALAR_PTR", "elem_size": 8, "len_field": -1, "fixed_length": -1}
+    {"index": 1, "offset": 8, "kind": "SCALAR_PTR", "elem_size": 8, "len_field": -1, "fixed_length": -1}
   ]
 }

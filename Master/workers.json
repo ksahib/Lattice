@@ -2,11 +2,11 @@
   "workers" : 
   [
     {
-      "address" : "127.0.0.1:50051",
+      "address" : "127.0.0.1:50052",
       "status" : "available"
     },
     {
-      "address" : "127.0.0.1:50052",
+      "address" : "bore.pub:26402",
       "status" : "available"
     }
   ]

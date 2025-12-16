@@ -37,9 +37,10 @@ struct EnvFieldMeta {
 static std::vector<EnvFieldMeta> g_env_fields;
 static uint64_t g_env_struct_size = 0;
 static std::once_flag g_env_meta_once;
+static std::mutex g_env_meta_mutex;
 
 // Forward declaration so debug_dump_env_worker can call it.
-static void load_env_metadata();
+static void load_env_metadata(const std::string* json_override = nullptr);
 
 // Debug helper to pretty-print env contents using metadata on the worker.
 static void debug_dump_env_worker(const std::string& label, void* env, size_t env_size) {
@@ -97,45 +98,59 @@ static void debug_dump_env_worker(const std::string& label, void* env, size_t en
     }
 }
 
-static void load_env_metadata() {
-    std::call_once(g_env_meta_once, []() {
-        // Allow overriding via ENV_METADATA_PATH env var, else use local Worker path, else /tmp.
+static void load_env_metadata(const std::string* json_override = nullptr) {
+    std::lock_guard<std::mutex> lock(g_env_meta_mutex);
+    
+    // If already loaded, skip
+    if (!g_env_fields.empty()) return;
+    
+    std::istream* input_stream = nullptr;
+    std::ifstream file_stream;
+    std::stringstream json_stream;
+    
+    if (json_override && !json_override->empty()) {
+        // Use JSON from TaskRequest (for cross-PC execution)
+        json_stream.str(*json_override);
+        input_stream = &json_stream;
+    } else {
+        // Fallback to file (for local testing)
         const char* env_override = std::getenv("ENV_METADATA_PATH");
         const char* fallback1 = "/home/niloy/vs_code/course/cse299/Lattice/Worker/env_metadata.json";
         const char* fallback2 = "/tmp/env_metadata.json";
         const char* path = env_override ? env_override : fallback1;
-        std::ifstream ifs(path);
-        if (!ifs.is_open()) {
-            // try fallback
+        file_stream.open(path);
+        if (!file_stream.is_open()) {
             path = fallback2;
-            ifs.open(path);
+            file_stream.open(path);
         }
-        if (!ifs.is_open()) {
+        if (!file_stream.is_open()) {
             std::cerr << "env meta: cannot open " << path << " (also tried env override and /tmp)\n";
             return;
         }
-        Json::Value root;
-        Json::CharReaderBuilder builder;
-        std::string errs;
-        if (!Json::parseFromStream(builder, ifs, &root, &errs)) {
-            std::cerr << "env meta: parse failed: " << errs << "\n";
-            return;
+        input_stream = &file_stream;
+    }
+    
+    Json::Value root;
+    Json::CharReaderBuilder builder;
+    std::string errs;
+    if (!Json::parseFromStream(builder, *input_stream, &root, &errs)) {
+        std::cerr << "env meta: parse failed: " << errs << "\n";
+        return;
+    }
+    if (root.isMember("struct_size"))
+        g_env_struct_size = root["struct_size"].asUInt64();
+    if (root.isMember("fields") && root["fields"].isArray()) {
+        for (const auto& f : root["fields"]) {
+            EnvFieldMeta m;
+            if (f.isMember("index")) m.index = f["index"].asInt();
+            if (f.isMember("offset")) m.offset = f["offset"].asUInt64();
+            if (f.isMember("kind")) m.kind = f["kind"].asString();
+            if (f.isMember("elem_size")) m.elem_size = f["elem_size"].asUInt64();
+            if (f.isMember("len_field")) m.len_field = f["len_field"].asInt();
+            if (f.isMember("fixed_length")) m.fixed_length = f["fixed_length"].asInt64();
+            g_env_fields.push_back(m);
         }
-        if (root.isMember("struct_size"))
-            g_env_struct_size = root["struct_size"].asUInt64();
-        if (root.isMember("fields") && root["fields"].isArray()) {
-            for (const auto& f : root["fields"]) {
-                EnvFieldMeta m;
-                if (f.isMember("index")) m.index = f["index"].asInt();
-                if (f.isMember("offset")) m.offset = f["offset"].asUInt64();
-                if (f.isMember("kind")) m.kind = f["kind"].asString();
-                if (f.isMember("elem_size")) m.elem_size = f["elem_size"].asUInt64();
-                if (f.isMember("len_field")) m.len_field = f["len_field"].asInt();
-                if (f.isMember("fixed_length")) m.fixed_length = f["fixed_length"].asInt64();
-                g_env_fields.push_back(m);
-            }
-        }
-    });
+    }
 }
 
 class TaskServiceImpl final : public TaskService::Service {
@@ -158,8 +173,14 @@ class TaskServiceImpl final : public TaskService::Service {
             memcpy(env, request->environment_data().data(), 
                    std::min(env_size, request->environment_data().size()));
 
+            // Load metadata from request (if provided) or fallback to file
+            if (request->has_env_metadata_json() && !request->env_metadata_json().empty()) {
+                load_env_metadata(&request->env_metadata_json());
+            } else {
+                load_env_metadata(nullptr);  // fallback to file
+            }
+            
             // Reconstruct pointer arrays/scalars using metadata and request.arrays
-            load_env_metadata();
             std::map<int, const task::EnvArrayField*> arrayMap;
             for (int i = 0; i < request->arrays_size(); ++i) {
                 const task::EnvArrayField& a = request->arrays(i);

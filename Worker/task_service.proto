@@ -22,6 +22,7 @@ message TaskRequest {
 
   // NEW: Logical array payloads for pointer fields in env
   repeated EnvArrayField arrays = 10;
+  string env_metadata_json = 11;  // JSON metadata for env structure (for cross-PC execution)
 }
 
 message TaskResponse {

@@ -325,8 +325,23 @@ bool execute_task_on_worker(
         request.set_ir_format("ll"); // we send textual LLVM IR (.opt.ll)
     }
 
-    // Attach logical array payloads using env metadata
+    // Attach env metadata JSON so worker knows env structure (for cross-PC execution)
     load_env_metadata();
+    const char* env_override = std::getenv("ENV_METADATA_PATH");
+    const char* default_path = "/home/niloy/vs_code/course/cse299/Lattice/Worker/env_metadata.json";
+    const char* meta_path = (env_override && *env_override) ? env_override : default_path;
+    
+    std::ifstream meta_file(meta_path);
+    if (meta_file.is_open()) {
+        std::string meta_json((std::istreambuf_iterator<char>(meta_file)),
+                              std::istreambuf_iterator<char>());
+        request.set_env_metadata_json(meta_json);
+        meta_file.close();
+    } else {
+        std::cerr << "Warning: Could not read env_metadata.json from " << meta_path << "\n";
+    }
+
+    // Attach logical array payloads using env metadata
     // Attach arrays/buffers for POINTER_ARRAY, FIXED_ARRAY and SCALAR_PTR fields
     for (const auto& meta : g_env_fields) {
         if (meta.elem_size == 0) continue;
