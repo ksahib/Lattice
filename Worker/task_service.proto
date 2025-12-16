@@ -13,8 +13,12 @@ message TaskRequest {
   int64 end = 3;
   int64 step = 4;
   bytes environment_data = 5;      // Serialized environment struct
-  uint64 environment_size = 6;      // Size of environment struct
-  string function_name = 7;         // "outlined_main_loopbody"
+  uint64 environment_size = 6;     // Size of environment struct (bytes)
+  string function_name = 7;        // "outlined_main_loopbody"
+
+  // NEW: Outlined LLVM IR / bitcode for this task
+  bytes ir_data = 8;               // Outlined LLVM IR or bitcode
+  string ir_format = 9;            // "ll" or "bc"
 }
 
 message TaskResponse {

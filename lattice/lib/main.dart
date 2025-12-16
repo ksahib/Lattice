@@ -1,6 +1,7 @@
 // main.dart
+import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show File, Platform;
+// 'dart:io' removed because not needed in the UI code
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -13,7 +14,24 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Uploader', home: const FileUploadPage());
+    // Use a near-black background and white text for high-contrast dark theme
+    final base = ThemeData.dark();
+    return MaterialApp(
+      title: 'Uploader',
+      theme: base.copyWith(
+        scaffoldBackgroundColor: Colors.black,
+        primaryColor: Colors.black,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+        ),
+        textTheme: base.textTheme.apply(
+          bodyColor: Colors.white,
+          displayColor: Colors.white,
+        ),
+      ),
+      home: const FileUploadPage(),
+    );
   }
 }
 
@@ -29,18 +47,26 @@ class _FileUploadPageState extends State<FileUploadPage> {
   Map<String, dynamic>? _responseJson;
 
   final String serverUrl = 'http://127.0.0.1:8080/upload';
+  final String workersUrl = 'http://127.0.0.1:8080/workers';
 
   Future<void> pickFile() async {
     try {
       final res = await FilePicker.platform.pickFiles(
-        withData: true,  // This ensures bytes are loaded
+        withData: true, // This ensures bytes are loaded
         type: FileType.custom,
-        allowedExtensions: ['cpp', 'c', 'h', 'hpp', 'cc', 'cxx'],  // C++ file types
+        allowedExtensions: [
+          'cpp',
+          'c',
+          'h',
+          'hpp',
+          'cc',
+          'cxx',
+        ], // C++ file types
       );
       if (res == null || res.files.isEmpty) return;
-      
+
       final file = res.files.first;
-      
+
       // On web, ensure bytes are available
       if (kIsWeb && file.bytes == null) {
         setState(() {
@@ -49,7 +75,7 @@ class _FileUploadPageState extends State<FileUploadPage> {
         });
         return;
       }
-      
+
       setState(() {
         _picked = file;
         _responseJson = null;
@@ -80,8 +106,8 @@ class _FileUploadPageState extends State<FileUploadPage> {
           throw Exception('File bytes are null. Cannot upload.');
         }
         final bytes = _picked!.bytes!;
-        final filename = _picked!.name.isNotEmpty 
-            ? _picked!.name 
+        final filename = _picked!.name.isNotEmpty
+            ? _picked!.name
             : 'uploaded_file.cpp';
         request.files.add(
           http.MultipartFile.fromBytes('file', bytes, filename: filename),
@@ -129,13 +155,11 @@ class _FileUploadPageState extends State<FileUploadPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Name: ${_picked!.name}'),
-        if (_picked!.size != null) Text('Size: ${_picked!.size} bytes'),
+        Text('Size: ${_picked!.size} bytes'),
         if (_picked!.extension != null) Text('Ext: ${_picked!.extension}'),
-        if (!kIsWeb && _picked!.path != null) 
-          Text('Path: ${_picked!.path}'),
-        if (kIsWeb) 
-          Text('Platform: Web (using file bytes)'),
-        if (_picked!.bytes != null) 
+        if (!kIsWeb && _picked!.path != null) Text('Path: ${_picked!.path}'),
+        if (kIsWeb) Text('Platform: Web (using file bytes)'),
+        if (_picked!.bytes != null)
           Text('Bytes loaded: ${_picked!.bytes!.length} bytes'),
       ],
     );
@@ -147,12 +171,16 @@ class _FileUploadPageState extends State<FileUploadPage> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(width: 1),
+        color: Colors.black,
+        border: Border.all(width: 1, color: Colors.white24),
         borderRadius: BorderRadius.circular(6),
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: Text(const JsonEncoder.withIndent('  ').convert(_responseJson)),
+        child: Text(
+          const JsonEncoder.withIndent('  ').convert(_responseJson),
+          style: const TextStyle(color: Colors.white),
+        ),
       ),
     );
   }
@@ -160,7 +188,23 @@ class _FileUploadPageState extends State<FileUploadPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('File uploader')),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('File uploader'),
+        actions: [
+          IconButton(
+            tooltip: 'Workers status',
+            icon: const Icon(Icons.storage),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => WorkersStatusPage(workersUrl: workersUrl),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -183,12 +227,197 @@ class _FileUploadPageState extends State<FileUploadPage> {
                   child: const Text('Upload'),
                 ),
                 const SizedBox(width: 12),
-                Text('Status: $_status'),
+                Text(
+                  'Status: $_status',
+                  style: const TextStyle(color: Colors.white),
+                ),
               ],
             ),
             _buildResponseView(),
             const Spacer(),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Workers status page - polls /workers and displays a live table
+class WorkersStatusPage extends StatefulWidget {
+  final String workersUrl;
+  const WorkersStatusPage({super.key, required this.workersUrl});
+
+  @override
+  State<WorkersStatusPage> createState() => _WorkersStatusPageState();
+}
+
+class _WorkersStatusPageState extends State<WorkersStatusPage> {
+  Timer? _poller;
+  List<Map<String, String>> _workers = [];
+  String _lastError = '';
+  DateTime? _lastUpdated;
+  int _total = 0;
+  int _available = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // fetch immediately, then poll every 2 seconds
+    _fetchWorkers();
+    _poller = Timer.periodic(
+      const Duration(seconds: 2),
+      (_) => _fetchWorkers(),
+    );
+  }
+
+  Future<void> _fetchWorkers() async {
+    try {
+      final resp = await http.get(Uri.parse(widget.workersUrl));
+      if (resp.statusCode >= 200 && resp.statusCode < 300) {
+        final jsonBody = json.decode(resp.body) as Map<String, dynamic>;
+        final List<dynamic> arr = jsonBody['workers'] ?? [];
+        final List<Map<String, String>> parsed = arr.map((e) {
+          final m = e as Map<String, dynamic>;
+          return {
+            'address': m['address'] as String? ?? '',
+            'status': m['status'] as String? ?? '',
+          };
+        }).toList();
+
+        setState(() {
+          _workers = parsed;
+          _lastError = '';
+          _lastUpdated = DateTime.now();
+          _total = (jsonBody['total'] ?? parsed.length) as int;
+          _available = (jsonBody['available'] ?? 0) as int;
+        });
+      } else {
+        setState(() {
+          _lastError = 'HTTP ${resp.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _lastError = e.toString();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _poller?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    await _fetchWorkers();
+  }
+
+  Widget _statusDot(String status) {
+    final color = (status.toLowerCase() == 'available')
+        ? Colors.green
+        : Colors.red;
+    return Row(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 8),
+        Text(status, style: const TextStyle(color: Colors.white)),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Workers status')),
+      body: RefreshIndicator(
+        color: Colors.white,
+        onRefresh: _refresh,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Total: $_total',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Available: $_available',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _lastUpdated != null
+                    ? 'Last update: ${_lastUpdated!.toLocal()}'
+                    : 'Never updated',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              if (_lastError.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Error: $_lastError',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Expanded(
+                child: _workers.isEmpty
+                    ? Center(
+                        child: _lastError.isEmpty
+                            ? const CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              )
+                            : Text(
+                                'No workers',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                      )
+                    : SingleChildScrollView(
+                        child: Container(
+                          color: Colors.black,
+                          child: DataTable(
+                            headingTextStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            dataTextStyle: const TextStyle(color: Colors.white),
+                            columns: const [
+                              DataColumn(label: Text('Address')),
+                              DataColumn(label: Text('Status')),
+                            ],
+                            rows: _workers.map((w) {
+                              return DataRow(
+                                cells: [
+                                  DataCell(
+                                    Text(
+                                      w['address'] ?? '',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(_statusDot(w['status'] ?? '')),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );

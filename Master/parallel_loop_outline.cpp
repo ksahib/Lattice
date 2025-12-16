@@ -20,6 +20,7 @@
 #include "llvm/Transforms/Scalar/DCE.h"
 #include "llvm/Transforms/Scalar/ADCE.h"
 #include "llvm/Transforms/Scalar/SimplifyCFG.h"
+#include "fstream"
 
 static void collectInnermostLoops(llvm::Loop *L, llvm::SmallVectorImpl<llvm::Loop *> &Out)
 {
@@ -500,10 +501,20 @@ llvm::Function *outlineLoop(llvm::Function &F, llvm::LoopInfo &LI, llvm::Dominat
 
             llvm::StructType *NewEnvStructTy =
                 llvm::StructType::create(F.getContext(), NewEnvFieldTys, "env.struct");
-            llvm::errs() << "Created environment struct type\n";
+            llvm::errs() << "Created environment struct typeddd\n";
             // Allocate env on heap via malloc
             uint64_t NewEnvSize = M->getDataLayout().getTypeAllocSize(NewEnvStructTy);
             llvm::Value *SizeConst = llvm::ConstantInt::get(Int64Ty, NewEnvSize);
+            llvm::errs() << "NewEnvSize: " << NewEnvSize << "\n";
+            {
+                const char *OutPath = "/tmp/env_struct_size.txt";
+                std::ofstream ofs(OutPath, std::ios::app);
+                if (!ofs.is_open()) {
+                    llvm::errs() << "Failed to open " << OutPath << " for writing\n";
+                } else {
+                    ofs  << NewEnvSize << "\n";
+                }
+            }
             llvm::FunctionCallee MallocFn = M->getOrInsertFunction("malloc",
                                                                    llvm::FunctionType::get(Int8PtrTy, {Int64Ty}, false));
             llvm::Value *RawPtr = B.CreateCall(MallocFn, {SizeConst}, "env_raw"); // i8*

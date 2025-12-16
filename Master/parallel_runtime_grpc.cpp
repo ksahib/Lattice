@@ -25,11 +25,50 @@ typedef void (*loop_body_fn)(int64_t i, void *env);
 static std::map<std::string, std::shared_ptr<Channel>> worker_channel_cache;
 static std::mutex channel_cache_mutex;
 
-// Environment size (set by LLVM pass)
-extern "C" uint64_t get_environment_size();
+// Environment size (set by LLVM pass and written to /tmp/env_struct_size.txt)
 static uint64_t g_current_env_size = 0;
 
-// Load worker addresses from JSON file
+// Read environment size from file written by loop outliner pass
+static uint64_t read_env_size_from_file() {
+    const char* path = "/tmp/env_struct_size.txt";
+    std::ifstream ifs(path);
+    if (!ifs.is_open()) {
+        std::cerr << "env size: cannot open " << path << ", using 0\n";
+        return 0; // will trigger fallback
+    }
+    uint64_t last = 0;
+    std::string line;
+    while (std::getline(ifs, line)) {
+        try {
+            if (!line.empty()) last = std::stoull(line);
+        } catch (...) {
+            // ignore bad lines
+        }
+    }
+    if (last == 0)
+        std::cerr << "env size: no valid size found, using 0\n";
+    else
+        std::cerr << "env size: " << last << "\n";
+    return last;
+}
+
+// Read current outlined IR from path provided via env var LATTICE_CURRENT_IR
+static std::string read_ir_from_env() {
+    const char* ir_path = std::getenv("LATTICE_CURRENT_IR");
+    if (!ir_path) {
+        std::cerr << "LATTICE_CURRENT_IR not set; no IR will be sent\n";
+        return "";
+    }
+    std::ifstream ir_file(ir_path, std::ios::binary);
+    if (!ir_file.is_open()) {
+        std::cerr << "Failed to open IR file: " << ir_path << "\n";
+        return "";
+    }
+    std::string contents((std::istreambuf_iterator<char>(ir_file)),
+                         std::istreambuf_iterator<char>());
+    return contents;
+}
+
 std::vector<std::string> load_worker_addresses_from_file(const std::string& file_path = "./workers.json") {
     std::vector<std::string> addresses;
     
@@ -82,6 +121,7 @@ std::shared_ptr<Channel> get_or_create_channel(const std::string& address) {
 // Serialize environment to bytes
 std::string serialize_environment(void* env, size_t env_size) {
     if (!env || env_size == 0) return "";
+
     return std::string(static_cast<char*>(env), env_size);
 }
 
@@ -156,6 +196,13 @@ bool execute_task_on_worker(
     request.set_environment_data(serialize_environment(env, env_size));
     request.set_environment_size(env_size);
     request.set_function_name("outlined_main_loopbody");
+
+    // Attach current outlined IR so the worker can compile it locally
+    std::string ir_data = read_ir_from_env();
+    if (!ir_data.empty()) {
+        request.set_ir_data(ir_data);
+        request.set_ir_format("ll"); // we send textual LLVM IR (.opt.ll)
+    }
     
     TaskResponse response;
     ClientContext context;
@@ -219,8 +266,9 @@ extern "C" void parallel_for_runtime(
     
     if (step == 0 || !body) return;
     
-    // Get environment size
-    g_current_env_size = get_environment_size();
+    // Get environment size (in bytes) for the outlined environment struct.
+    // The loop outliner pass writes this to /tmp/env_struct_size.txt.
+    g_current_env_size = read_env_size_from_file();
     if (g_current_env_size == 0) {
         std::cerr << "Warning: Environment size is 0, using fallback\n";
         g_current_env_size = 1024;  // Fallback

@@ -264,6 +264,8 @@ class TaskRequest final : public ::google::protobuf::Message
   enum : int {
     kEnvironmentDataFieldNumber = 5,
     kFunctionNameFieldNumber = 7,
+    kIrDataFieldNumber = 8,
+    kIrFormatFieldNumber = 9,
     kTaskIdFieldNumber = 1,
     kStartFieldNumber = 2,
     kEndFieldNumber = 3,
@@ -300,6 +302,38 @@ class TaskRequest final : public ::google::protobuf::Message
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_function_name(
       const std::string& value);
   std::string* _internal_mutable_function_name();
+
+  public:
+  // bytes ir_data = 8;
+  void clear_ir_data() ;
+  const std::string& ir_data() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_ir_data(Arg_&& arg, Args_... args);
+  std::string* mutable_ir_data();
+  PROTOBUF_NODISCARD std::string* release_ir_data();
+  void set_allocated_ir_data(std::string* value);
+
+  private:
+  const std::string& _internal_ir_data() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ir_data(
+      const std::string& value);
+  std::string* _internal_mutable_ir_data();
+
+  public:
+  // string ir_format = 9;
+  void clear_ir_format() ;
+  const std::string& ir_format() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_ir_format(Arg_&& arg, Args_... args);
+  std::string* mutable_ir_format();
+  PROTOBUF_NODISCARD std::string* release_ir_format();
+  void set_allocated_ir_format(std::string* value);
+
+  private:
+  const std::string& _internal_ir_format() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ir_format(
+      const std::string& value);
+  std::string* _internal_mutable_ir_format();
 
   public:
   // int64 task_id = 1;
@@ -357,8 +391,8 @@ class TaskRequest final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 7, 0,
-      38, 2>
+      4, 9, 0,
+      55, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -377,6 +411,8 @@ class TaskRequest final : public ::google::protobuf::Message
                           const TaskRequest& from_msg);
     ::google::protobuf::internal::ArenaStringPtr environment_data_;
     ::google::protobuf::internal::ArenaStringPtr function_name_;
+    ::google::protobuf::internal::ArenaStringPtr ir_data_;
+    ::google::protobuf::internal::ArenaStringPtr ir_format_;
     ::int64_t task_id_;
     ::int64_t start_;
     ::int64_t end_;
@@ -879,6 +915,102 @@ inline void TaskRequest::set_allocated_function_name(std::string* value) {
     _impl_.function_name_.Set("", GetArena());
   }
   // @@protoc_insertion_point(field_set_allocated:task.TaskRequest.function_name)
+}
+
+// bytes ir_data = 8;
+inline void TaskRequest::clear_ir_data() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.ir_data_.ClearToEmpty();
+}
+inline const std::string& TaskRequest::ir_data() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:task.TaskRequest.ir_data)
+  return _internal_ir_data();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void TaskRequest::set_ir_data(Arg_&& arg,
+                                                     Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.ir_data_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
+  // @@protoc_insertion_point(field_set:task.TaskRequest.ir_data)
+}
+inline std::string* TaskRequest::mutable_ir_data() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_ir_data();
+  // @@protoc_insertion_point(field_mutable:task.TaskRequest.ir_data)
+  return _s;
+}
+inline const std::string& TaskRequest::_internal_ir_data() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.ir_data_.Get();
+}
+inline void TaskRequest::_internal_set_ir_data(const std::string& value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.ir_data_.Set(value, GetArena());
+}
+inline std::string* TaskRequest::_internal_mutable_ir_data() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.ir_data_.Mutable( GetArena());
+}
+inline std::string* TaskRequest::release_ir_data() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:task.TaskRequest.ir_data)
+  return _impl_.ir_data_.Release();
+}
+inline void TaskRequest::set_allocated_ir_data(std::string* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.ir_data_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.ir_data_.IsDefault()) {
+    _impl_.ir_data_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:task.TaskRequest.ir_data)
+}
+
+// string ir_format = 9;
+inline void TaskRequest::clear_ir_format() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.ir_format_.ClearToEmpty();
+}
+inline const std::string& TaskRequest::ir_format() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:task.TaskRequest.ir_format)
+  return _internal_ir_format();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void TaskRequest::set_ir_format(Arg_&& arg,
+                                                     Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.ir_format_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  // @@protoc_insertion_point(field_set:task.TaskRequest.ir_format)
+}
+inline std::string* TaskRequest::mutable_ir_format() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_ir_format();
+  // @@protoc_insertion_point(field_mutable:task.TaskRequest.ir_format)
+  return _s;
+}
+inline const std::string& TaskRequest::_internal_ir_format() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.ir_format_.Get();
+}
+inline void TaskRequest::_internal_set_ir_format(const std::string& value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.ir_format_.Set(value, GetArena());
+}
+inline std::string* TaskRequest::_internal_mutable_ir_format() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.ir_format_.Mutable( GetArena());
+}
+inline std::string* TaskRequest::release_ir_format() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:task.TaskRequest.ir_format)
+  return _impl_.ir_format_.Release();
+}
+inline void TaskRequest::set_allocated_ir_format(std::string* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.ir_format_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.ir_format_.IsDefault()) {
+    _impl_.ir_format_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:task.TaskRequest.ir_format)
 }
 
 // -------------------------------------------------------------------

@@ -52,6 +52,12 @@ inline constexpr TaskRequest::Impl_::Impl_(
         function_name_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
+        ir_data_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        ir_format_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
         task_id_{::int64_t{0}},
         start_{::int64_t{0}},
         end_{::int64_t{0}},
@@ -135,6 +141,8 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::task::TaskRequest, _impl_.environment_data_),
         PROTOBUF_FIELD_OFFSET(::task::TaskRequest, _impl_.environment_size_),
         PROTOBUF_FIELD_OFFSET(::task::TaskRequest, _impl_.function_name_),
+        PROTOBUF_FIELD_OFFSET(::task::TaskRequest, _impl_.ir_data_),
+        PROTOBUF_FIELD_OFFSET(::task::TaskRequest, _impl_.ir_format_),
         PROTOBUF_FIELD_OFFSET(::task::TaskResponse_IterationOutputsEntry_DoNotUse, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::task::TaskResponse_IterationOutputsEntry_DoNotUse, _internal_metadata_),
         ~0u,  // no _extensions_
@@ -166,8 +174,8 @@ const ::uint32_t
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, -1, -1, sizeof(::task::TaskRequest)},
-        {15, 25, -1, sizeof(::task::TaskResponse_IterationOutputsEntry_DoNotUse)},
-        {27, -1, -1, sizeof(::task::TaskResponse)},
+        {17, 27, -1, sizeof(::task::TaskResponse_IterationOutputsEntry_DoNotUse)},
+        {29, -1, -1, sizeof(::task::TaskResponse)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
     &::task::_TaskRequest_default_instance_._instance,
@@ -176,25 +184,26 @@ static const ::_pb::Message* const file_default_instances[] = {
 };
 const char descriptor_table_protodef_task_5fservice_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
-    "\n\022task_service.proto\022\004task\"\223\001\n\013TaskReque"
+    "\n\022task_service.proto\022\004task\"\267\001\n\013TaskReque"
     "st\022\017\n\007task_id\030\001 \001(\003\022\r\n\005start\030\002 \001(\003\022\013\n\003en"
     "d\030\003 \001(\003\022\014\n\004step\030\004 \001(\003\022\030\n\020environment_dat"
     "a\030\005 \001(\014\022\030\n\020environment_size\030\006 \001(\004\022\025\n\rfun"
-    "ction_name\030\007 \001(\t\"\357\001\n\014TaskResponse\022\017\n\007tas"
-    "k_id\030\001 \001(\003\022\017\n\007success\030\002 \001(\010\022\023\n\013result_da"
-    "ta\030\003 \001(\014\022\023\n\013result_size\030\004 \001(\004\022\025\n\rerror_m"
-    "essage\030\005 \001(\t\022C\n\021iteration_outputs\030\006 \003(\0132"
-    "(.task.TaskResponse.IterationOutputsEntr"
-    "y\0327\n\025IterationOutputsEntry\022\013\n\003key\030\001 \001(\003\022"
-    "\r\n\005value\030\002 \001(\014:\0028\0012C\n\013TaskService\0224\n\013Exe"
-    "cuteTask\022\021.task.TaskRequest\032\022.task.TaskR"
-    "esponseb\006proto3"
+    "ction_name\030\007 \001(\t\022\017\n\007ir_data\030\010 \001(\014\022\021\n\tir_"
+    "format\030\t \001(\t\"\357\001\n\014TaskResponse\022\017\n\007task_id"
+    "\030\001 \001(\003\022\017\n\007success\030\002 \001(\010\022\023\n\013result_data\030\003"
+    " \001(\014\022\023\n\013result_size\030\004 \001(\004\022\025\n\rerror_messa"
+    "ge\030\005 \001(\t\022C\n\021iteration_outputs\030\006 \003(\0132(.ta"
+    "sk.TaskResponse.IterationOutputsEntry\0327\n"
+    "\025IterationOutputsEntry\022\013\n\003key\030\001 \001(\003\022\r\n\005v"
+    "alue\030\002 \001(\014:\0028\0012C\n\013TaskService\0224\n\013Execute"
+    "Task\022\021.task.TaskRequest\032\022.task.TaskRespo"
+    "nseb\006proto3"
 };
 static ::absl::once_flag descriptor_table_task_5fservice_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_task_5fservice_2eproto = {
     false,
     false,
-    495,
+    531,
     descriptor_table_protodef_task_5fservice_2eproto,
     "task_service.proto",
     &descriptor_table_task_5fservice_2eproto_once,
@@ -228,6 +237,8 @@ inline PROTOBUF_NDEBUG_INLINE TaskRequest::Impl_::Impl_(
     const Impl_& from, const ::task::TaskRequest& from_msg)
       : environment_data_(arena, from.environment_data_),
         function_name_(arena, from.function_name_),
+        ir_data_(arena, from.ir_data_),
+        ir_format_(arena, from.ir_format_),
         _cached_size_{0} {}
 
 TaskRequest::TaskRequest(
@@ -258,6 +269,8 @@ inline PROTOBUF_NDEBUG_INLINE TaskRequest::Impl_::Impl_(
     ::google::protobuf::Arena* arena)
       : environment_data_(arena),
         function_name_(arena),
+        ir_data_(arena),
+        ir_format_(arena),
         _cached_size_{0} {}
 
 inline void TaskRequest::SharedCtor(::_pb::Arena* arena) {
@@ -279,6 +292,8 @@ inline void TaskRequest::SharedDtor(MessageLite& self) {
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.environment_data_.Destroy();
   this_._impl_.function_name_.Destroy();
+  this_._impl_.ir_data_.Destroy();
+  this_._impl_.ir_format_.Destroy();
   this_._impl_.~Impl_();
 }
 
@@ -318,15 +333,15 @@ const ::google::protobuf::internal::ClassData* TaskRequest::GetClassData() const
   return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 7, 0, 38, 2> TaskRequest::_table_ = {
+const ::_pbi::TcParseTable<4, 9, 0, 55, 2> TaskRequest::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    7, 56,  // max_field_number, fast_idx_mask
+    9, 120,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967168,  // skipmap
+    4294966784,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    7,  // num_field_entries
+    9,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
     _class_data_.base(),
@@ -358,6 +373,18 @@ const ::_pbi::TcParseTable<3, 7, 0, 38, 2> TaskRequest::_table_ = {
     // string function_name = 7;
     {::_pbi::TcParser::FastUS1,
      {58, 63, 0, PROTOBUF_FIELD_OFFSET(TaskRequest, _impl_.function_name_)}},
+    // bytes ir_data = 8;
+    {::_pbi::TcParser::FastBS1,
+     {66, 63, 0, PROTOBUF_FIELD_OFFSET(TaskRequest, _impl_.ir_data_)}},
+    // string ir_format = 9;
+    {::_pbi::TcParser::FastUS1,
+     {74, 63, 0, PROTOBUF_FIELD_OFFSET(TaskRequest, _impl_.ir_format_)}},
+    {::_pbi::TcParser::MiniParse, {}},
+    {::_pbi::TcParser::MiniParse, {}},
+    {::_pbi::TcParser::MiniParse, {}},
+    {::_pbi::TcParser::MiniParse, {}},
+    {::_pbi::TcParser::MiniParse, {}},
+    {::_pbi::TcParser::MiniParse, {}},
   }}, {{
     65535, 65535
   }}, {{
@@ -382,12 +409,19 @@ const ::_pbi::TcParseTable<3, 7, 0, 38, 2> TaskRequest::_table_ = {
     // string function_name = 7;
     {PROTOBUF_FIELD_OFFSET(TaskRequest, _impl_.function_name_), 0, 0,
     (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // bytes ir_data = 8;
+    {PROTOBUF_FIELD_OFFSET(TaskRequest, _impl_.ir_data_), 0, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kBytes | ::_fl::kRepAString)},
+    // string ir_format = 9;
+    {PROTOBUF_FIELD_OFFSET(TaskRequest, _impl_.ir_format_), 0, 0,
+    (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
   }},
   // no aux_entries
   {{
-    "\20\0\0\0\0\0\0\15"
+    "\20\0\0\0\0\0\0\15\0\11\0\0\0\0\0\0"
     "task.TaskRequest"
     "function_name"
+    "ir_format"
   }},
 };
 
@@ -400,6 +434,8 @@ PROTOBUF_NOINLINE void TaskRequest::Clear() {
 
   _impl_.environment_data_.ClearToEmpty();
   _impl_.function_name_.ClearToEmpty();
+  _impl_.ir_data_.ClearToEmpty();
+  _impl_.ir_format_.ClearToEmpty();
   ::memset(&_impl_.task_id_, 0, static_cast<::size_t>(
       reinterpret_cast<char*>(&_impl_.environment_size_) -
       reinterpret_cast<char*>(&_impl_.task_id_)) + sizeof(_impl_.environment_size_));
@@ -470,6 +506,20 @@ PROTOBUF_NOINLINE void TaskRequest::Clear() {
             target = stream->WriteStringMaybeAliased(7, _s, target);
           }
 
+          // bytes ir_data = 8;
+          if (!this_._internal_ir_data().empty()) {
+            const std::string& _s = this_._internal_ir_data();
+            target = stream->WriteBytesMaybeAliased(8, _s, target);
+          }
+
+          // string ir_format = 9;
+          if (!this_._internal_ir_format().empty()) {
+            const std::string& _s = this_._internal_ir_format();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "task.TaskRequest.ir_format");
+            target = stream->WriteStringMaybeAliased(9, _s, target);
+          }
+
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -504,6 +554,16 @@ PROTOBUF_NOINLINE void TaskRequest::Clear() {
             if (!this_._internal_function_name().empty()) {
               total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                               this_._internal_function_name());
+            }
+            // bytes ir_data = 8;
+            if (!this_._internal_ir_data().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
+                                              this_._internal_ir_data());
+            }
+            // string ir_format = 9;
+            if (!this_._internal_ir_format().empty()) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_ir_format());
             }
             // int64 task_id = 1;
             if (this_._internal_task_id() != 0) {
@@ -549,6 +609,12 @@ void TaskRequest::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   if (!from._internal_function_name().empty()) {
     _this->_internal_set_function_name(from._internal_function_name());
   }
+  if (!from._internal_ir_data().empty()) {
+    _this->_internal_set_ir_data(from._internal_ir_data());
+  }
+  if (!from._internal_ir_format().empty()) {
+    _this->_internal_set_ir_format(from._internal_ir_format());
+  }
   if (from._internal_task_id() != 0) {
     _this->_impl_.task_id_ = from._impl_.task_id_;
   }
@@ -582,6 +648,8 @@ void TaskRequest::InternalSwap(TaskRequest* PROTOBUF_RESTRICT other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.environment_data_, &other->_impl_.environment_data_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.function_name_, &other->_impl_.function_name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.ir_data_, &other->_impl_.ir_data_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.ir_format_, &other->_impl_.ir_format_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(TaskRequest, _impl_.environment_size_)
       + sizeof(TaskRequest::_impl_.environment_size_)

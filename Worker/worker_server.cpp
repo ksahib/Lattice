@@ -8,6 +8,7 @@
 #include <sstream>
 #include <curl/curl.h>
 #include <json/json.h>
+#include <fstream>
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -18,7 +19,9 @@ using task::TaskRequest;
 using task::TaskResponse;
 
 // Function pointer type for outlined function
-typedef void (*outlined_fn_t)(int64_t, void*);
+// Match the IR signature, e.g.:
+//   define dso_local i1 @outlined_main_loopbody(i64 %0, ptr %1, ptr %.out)
+using outlined_fn_t = bool (*)(int64_t, void*, void*);
 
 class TaskServiceImpl final : public TaskService::Service {
     Status ExecuteTask(ServerContext* context,
@@ -40,34 +43,56 @@ class TaskServiceImpl final : public TaskService::Service {
             memcpy(env, request->environment_data().data(), 
                    std::min(env_size, request->environment_data().size()));
             
-            // Load the outlined function
-            // For now, assume it's in the same process (compiled together)
-            // In production, you'd load from shared library
-            outlined_fn_t outlined_fn = nullptr;
-            
-            // Try to find the function by name
-            // This is a simplified version - in practice, you'd load from .so
-            void* handle = dlopen(nullptr, RTLD_LAZY);
-            if (handle) {
-                outlined_fn = (outlined_fn_t) dlsym(handle, 
-                    request->function_name().c_str());
-                dlclose(handle);
+            // --- Compile IR on worker and load outlined function ---
+            // 1) Write IR to a temporary file
+            std::string ir_path = "/tmp/task_" + std::to_string(request->task_id()) + ".ll";
+            {
+                std::ofstream ofs(ir_path, std::ios::binary);
+                ofs.write(request->ir_data().data(), request->ir_data().size());
             }
-            
+
+            // 2) Compile IR to a shared object
+            std::string so_path = "/tmp/libtask_" + std::to_string(request->task_id()) + ".so";
+            {
+                std::stringstream cmd;
+                cmd << "clang++-20 -shared -fPIC -O2 "
+                    << ir_path << " -o " << so_path;
+                int compile_ret = system(cmd.str().c_str());
+                if (compile_ret != 0) {
+                    free(env);
+                    response->set_success(false);
+                    response->set_error_message("Failed to compile IR on worker");
+                    return Status::OK;
+                }
+            }
+
+            // 3) dlopen the shared object
+            void* handle = dlopen(so_path.c_str(), RTLD_LAZY);
+            if (!handle) {
+                free(env);
+                response->set_success(false);
+                response->set_error_message(std::string("dlopen failed: ") + dlerror());
+                return Status::OK;
+            }
+
+            // 4) dlsym the outlined function
+            outlined_fn_t outlined_fn =
+                (outlined_fn_t)dlsym(handle, request->function_name().c_str());
             if (!outlined_fn) {
+                dlclose(handle);
                 free(env);
                 response->set_success(false);
                 response->set_error_message("Failed to load outlined function");
                 return Status::OK;
             }
-            
+
             // Execute loop iterations
             int64_t start = request->start();
             int64_t end = request->end();
             int64_t step = request->step();
             
             for (int64_t i = start; i < end; i += step) {
-                outlined_fn(i, env);
+                (void)outlined_fn(i, env, nullptr);
             }
             
             // Serialize updated environment as result
@@ -75,6 +100,7 @@ class TaskServiceImpl final : public TaskService::Service {
             response->set_result_size(env_size);
             response->set_success(true);
             
+            dlclose(handle);
             free(env);
             return Status::OK;
             
