@@ -1,25 +1,33 @@
-
-int main() {
-    int m =6;
-    // int a[6];
-    // int b[6];
-    int a[30] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30};
-    int b[30] = {17,42,23,45,15,67,78,89,90,101,112,123,134,145,156,167,178,189,190,201,212,223,234,245,256,267,278,289,290,301};
-    int c[30];
-    // for (int i = 0; i < 6; ++i) 
-    // {
-    //     x[i] = i;
-    //     y[i] = i + 1;
-    // }
-    for (int i = 0; i < 30; ++i) 
-    {
+// #include <iostream>
+// #include <stdio.h>
+// int main() {
+//     int m =6;
+//     // int a[6];
+//     // int b[6];
+//     int a[30] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30};
+//     int b[30] = {17,42,23,45,15,67,78,89,90,101,112,123,134,145,156,167,178,189,190,201,212,223,234,245,256,267,278,289,290,301};
+//     int c[30];
+//     // for (int j = 0; j < 30; ++j) 
+//     // {
+//     //     a[j] = j;
+//     //     b[j] = j + 1;
+//     // }
+//     for (int i = 0; i < 30; ++i) 
+//     {
     
-        c[i] = a[i] + b[i];
+//         c[i] = a[i] + b[i];
     
-    }
-    return c[0];
-}
-
+//     }
+    
+//     // for (int i = 0; i < 30; ++i) 
+//     // {
+    
+//     //     printf("%d ", c[i]);
+//     //     printf("\n");
+//     // }
+    
+//     return 0;
+// }
 
 // int main() {
 //     int m = 8;
@@ -56,36 +64,35 @@ int main() {
 //     return pi;
 // }
 
-// #include <iostream>
-// #include <random>
+#include <iostream>
+#include <random>
 
-// int main() {
-//     const long long N = 10;
+int main() {
+    const long long N = 10;
 
-//     int x[10], y[10], hit[10];
-//     // std::vector<double> x(10), y(10);
-//     // std::vector<int> hit(10);   // 0 or 1 per iteration
+    int x[10], y[10], hit[10];
+    // std::vector<double> x(10), y(10);
+    // std::vector<int> hit(10);   // 0 or 1 per iteration
 
-//     // -----------------------------
-//     // DOALL loop #1: random numbers
-//     // -----------------------------
-//     std::mt19937_64 rng(1234);
-//     std::uniform_real_distribution<double> dist(0.0, 1.0);
+    std::mt19937_64 rng(1234);
+    std::uniform_real_distribution<double> dist(0.0, 1.0);
 
-//     for (long long i = 0; i < 10; i++) {
-//         x[i] = dist(rng);
-//         y[i] = dist(rng);
-//     }
+    // for (long long i = 0; i < 10; i++) {
+    //     x[i] = dist(rng);
+    //     y[i] = dist(rng);
+    // }
 
-//     // -----------------------------
-//     // DOALL loop #2: Monte Carlo test
-//     // -----------------------------
-//     for (long long i = 0; i < 10; i++) {
-//         double r2 = x[i] * x[i] + y[i] * y[i];
-//         hit[i] = (r2 <= 1.0);   // independent write
-//     }
+    // -----------------------------
+    // DOALL loop #2: Monte Carlo test
+    // -----------------------------
+    for (long long i = 0; i < 10; i++) {
+        x[i] = dist(rng);
+        y[i] = dist(rng);
+        double r2 = x[i] * x[i] + y[i] * y[i];
+        hit[i] = (r2 <= 1.0);   // independent write
+    }
 
     
 
-//     return hit[0];
-// }
+    return hit[0];
+}
