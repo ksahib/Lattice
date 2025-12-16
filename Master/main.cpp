@@ -503,8 +503,12 @@ int main()
                         throw std::runtime_error("Failed to outline loops");
                     }
 
+                    // Link final program using gRPC-based parallel runtime.
+                    // We delegate to a shell script that knows how to find vcpkg + gRPC libs.
+                    // NOTE: Adjust the path to link_with_grpc.sh if you move this project.
                     std::string final_pass =
-                        "clang++ -O2 " + savedPath + ".opt.ll /home/niloy/vs_code/course/cse299/Lattice/Master/parallel_runtime.o -o runprog -lpthread";
+                        "bash /home/niloy/vs_code/course/cse299/Lattice/Master/link_with_grpc.sh " +
+                        savedPath + ".opt.ll";
 
                     int ret5 = std::system(final_pass.c_str());
                     if (ret5 != 0)
