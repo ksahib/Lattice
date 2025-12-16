@@ -31,6 +31,7 @@ message TaskResponse {
   uint64 result_size = 4;           // Size of result data
   string error_message = 5;
   map<int64, bytes> iteration_outputs = 6;  // Per-iteration outputs if needed
+  repeated EnvArrayField arrays = 7;  // Logical array payloads for updated env fields (safe for merging)
 }
 
 // Describes one pointer-array field's payload

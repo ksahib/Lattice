@@ -262,6 +262,34 @@ class TaskServiceImpl final : public TaskService::Service {
                 debug_dump_env_worker(label.str(), env, env_size);
             }
             
+            // Build array payloads for updated env fields (safe for master to merge)
+            for (const auto& meta : g_env_fields) {
+                if (meta.kind != "FIXED_ARRAY" && meta.kind != "SCALAR_PTR") continue;
+                if (meta.elem_size == 0) continue;
+
+                uint64_t len = 0;
+                if (meta.kind == "FIXED_ARRAY") {
+                    if (meta.fixed_length > 0) len = static_cast<uint64_t>(meta.fixed_length);
+                } else if (meta.kind == "SCALAR_PTR") {
+                    len = 1;
+                }
+                if (len == 0) continue;
+
+                if (meta.offset + sizeof(uintptr_t) > env_size) continue;
+
+                uintptr_t ptr_val = 0;
+                memcpy(&ptr_val, static_cast<char*>(env) + meta.offset, sizeof(uintptr_t));
+                if (ptr_val == 0) continue;
+
+                const char* src = reinterpret_cast<const char*>(ptr_val);
+                uint64_t bytes = len * meta.elem_size;
+
+                task::EnvArrayField* arr = response->add_arrays();
+                arr->set_field_index(meta.index);
+                arr->set_length(len);
+                arr->set_data(src, bytes);
+            }
+            
             // Serialize updated environment as result
             response->set_result_data(std::string(static_cast<char*>(env), env_size));
             response->set_result_size(env_size);

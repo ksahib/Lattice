@@ -292,7 +292,8 @@ bool execute_task_on_worker(
     int64_t start, int64_t end, int64_t step,
     void* env, size_t env_size,
     int64_t task_id,
-    void** result_env, size_t* result_size) {
+    void** result_env, size_t* result_size,
+    std::vector<task::EnvArrayField>* out_arrays) {
     
     // Get or create channel for this worker
     auto channel = get_or_create_channel(worker_address);
@@ -382,7 +383,15 @@ bool execute_task_on_worker(
     Status status = stub->ExecuteTask(&context, request, &response);
     
     if (status.ok() && response.success()) {
-        // Deserialize result
+        // Capture array payloads from worker (safe for merging)
+        if (out_arrays) {
+            out_arrays->clear();
+            for (int i = 0; i < response.arrays_size(); ++i) {
+                out_arrays->push_back(response.arrays(i));
+            }
+        }
+
+        // Deserialize result (kept for compatibility, but merge will use arrays)
         if (response.result_size() > 0 && !response.result_data().empty()) {
             *result_env = deserialize_environment(
                 response.result_data(), 
@@ -403,28 +412,93 @@ bool execute_task_on_worker(
     }
 }
 
-// Merge results from multiple workers
+// Merge results from multiple workers using array payloads (safe: no pointer dereferencing)
 void merge_results(
-    const std::vector<void*>& result_envs,
-    const std::vector<size_t>& result_sizes,
+    const std::vector<std::vector<task::EnvArrayField>>& all_arrays,
+    const std::vector<TaskPartition>& partitions,
     void* original_env,
     size_t original_env_size) {
     
-    if (result_envs.empty()) return;
-    
-    // For now, simple merge: use the last result
-    // TODO: Implement proper merging based on data structure
-    // For arrays: merge by index
-    // For scalars: use reduction operation
-    
-    if (result_envs.back() && result_sizes.back() == original_env_size) {
-        memcpy(original_env, result_envs.back(), original_env_size);
+    if (all_arrays.empty() || partitions.empty()) return;
+
+    load_env_metadata();
+
+    // Build quick lookup: field_index -> EnvFieldMeta
+    std::map<int, EnvFieldMeta> meta_by_index;
+    for (const auto& m : g_env_fields) {
+        meta_by_index[m.index] = m;
     }
-    
-    // Free temporary result buffers
-    for (void* env : result_envs) {
-        if (env) free(env);
+
+    for (size_t i = 0; i < all_arrays.size(); ++i) {
+        if (i >= partitions.size()) continue;
+        const auto& p = partitions[i];
+        const auto& arrays = all_arrays[i];
+
+        for (const auto& arr : arrays) {
+            int field_index = static_cast<int>(arr.field_index());
+            auto it = meta_by_index.find(field_index);
+            if (it == meta_by_index.end()) continue;
+            const auto& meta = it->second;
+
+            // For now, handle FIXED_ARRAY of int32 (matches test1.cpp c[5])
+            if (meta.kind != "FIXED_ARRAY" ||
+                meta.elem_size != 4 ||
+                meta.fixed_length <= 0)
+                continue;
+
+            if (meta.offset + sizeof(uintptr_t) > original_env_size) continue;
+
+            // Destination pointer in *master* env (safe to dereference)
+            uintptr_t dst_ptr_val = 0;
+            memcpy(&dst_ptr_val,
+                   static_cast<char*>(original_env) + meta.offset,
+                   sizeof(uintptr_t));
+            if (!dst_ptr_val) continue;
+            auto* dst = reinterpret_cast<int32_t*>(dst_ptr_val);
+
+            // Source data from worker array payload (pure bytes, no pointer dereferencing)
+            const int32_t* src = reinterpret_cast<const int32_t*>(arr.data().data());
+            uint64_t len = arr.length();
+
+            int64_t start = p.start;
+            int64_t end   = p.end;
+            int64_t step  = p.step;
+
+            // Copy only indices this partition was responsible for
+            for (int64_t idx = start; idx < end; idx += step) {
+                if (idx < 0 || static_cast<uint64_t>(idx) >= len) continue;
+                if (static_cast<int64_t>(idx) >= meta.fixed_length) continue;
+                dst[idx] = src[idx];
+            }
+        }
     }
+
+    // Debug: show merged env on master after applying all partitions
+    debug_dump_env("master merged env (from worker arrays)", original_env, original_env_size);
+    
+    // Additional prominent debug: print merged FIXED_ARRAY results
+    std::cerr << "\n========================================\n";
+    std::cerr << "[LATTICE MERGE RESULT]\n";
+    for (const auto& meta : g_env_fields) {
+        if (meta.kind == "FIXED_ARRAY" && meta.elem_size == 4 && meta.fixed_length > 0) {
+            if (meta.offset + sizeof(uintptr_t) > original_env_size) continue;
+            
+            uintptr_t ptr_val = 0;
+            memcpy(&ptr_val, static_cast<char*>(original_env) + meta.offset, sizeof(uintptr_t));
+            if (!ptr_val) continue;
+            
+            const int32_t* arr = reinterpret_cast<const int32_t*>(ptr_val);
+            uint64_t len = static_cast<uint64_t>(meta.fixed_length);
+            
+            std::cerr << "  Merged array (field " << meta.index << ", len=" << len << "): [";
+            for (uint64_t i = 0; i < len; ++i) {
+                std::cerr << arr[i];
+                if (i + 1 < len) std::cerr << ", ";
+            }
+            std::cerr << "]\n";
+        }
+    }
+    std::cerr << "========================================\n\n";
 }
 
 // NEW: gRPC-based parallel_for_runtime
@@ -463,6 +537,7 @@ extern "C" void parallel_for_runtime(
     std::vector<bool> results(partitions.size());
     std::vector<void*> result_envs(partitions.size(), nullptr);
     std::vector<size_t> result_sizes(partitions.size(), 0);
+    std::vector<std::vector<task::EnvArrayField>> all_arrays(partitions.size());
     std::vector<std::string> worker_addresses_used(partitions.size());
     std::mutex results_mutex;
     
@@ -479,7 +554,8 @@ extern "C" void parallel_for_runtime(
                 partition.start, partition.end, partition.step,
                 env, g_current_env_size,
                 static_cast<int64_t>(i),  // task_id
-                &result_env, &result_size
+                &result_env, &result_size,
+                &all_arrays[i]  // Capture arrays from worker
             );
             
             // Store results
@@ -494,8 +570,13 @@ extern "C" void parallel_for_runtime(
         t.join();
     }
     
-    // Merge results
-    merge_results(result_envs, result_sizes, env, g_current_env_size);
+    // Merge results using arrays (safe: no pointer dereferencing)
+    merge_results(all_arrays, partitions, env, g_current_env_size);
+    
+    // Free temporary result buffers
+    for (void* env_ptr : result_envs) {
+        if (env_ptr) free(env_ptr);
+    }
     
     // Check if all succeeded
     bool all_success = true;

@@ -76,6 +76,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
 inline constexpr TaskResponse::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : iteration_outputs_{},
+        arrays_{},
         result_data_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
@@ -200,6 +201,7 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::task::TaskResponse, _impl_.result_size_),
         PROTOBUF_FIELD_OFFSET(::task::TaskResponse, _impl_.error_message_),
         PROTOBUF_FIELD_OFFSET(::task::TaskResponse, _impl_.iteration_outputs_),
+        PROTOBUF_FIELD_OFFSET(::task::TaskResponse, _impl_.arrays_),
         ~0u,  // no _has_bits_
         PROTOBUF_FIELD_OFFSET(::task::EnvArrayField, _internal_metadata_),
         ~0u,  // no _extensions_
@@ -218,7 +220,7 @@ static const ::_pbi::MigrationSchema
         {0, -1, -1, sizeof(::task::TaskRequest)},
         {18, 28, -1, sizeof(::task::TaskResponse_IterationOutputsEntry_DoNotUse)},
         {30, -1, -1, sizeof(::task::TaskResponse)},
-        {44, -1, -1, sizeof(::task::EnvArrayField)},
+        {45, -1, -1, sizeof(::task::EnvArrayField)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
     &::task::_TaskRequest_default_instance_._instance,
@@ -234,22 +236,23 @@ const char descriptor_table_protodef_task_5fservice_2eproto[] ABSL_ATTRIBUTE_SEC
     "a\030\005 \001(\014\022\030\n\020environment_size\030\006 \001(\004\022\025\n\rfun"
     "ction_name\030\007 \001(\t\022\017\n\007ir_data\030\010 \001(\014\022\021\n\tir_"
     "format\030\t \001(\t\022#\n\006arrays\030\n \003(\0132\023.task.EnvA"
-    "rrayField\"\357\001\n\014TaskResponse\022\017\n\007task_id\030\001 "
+    "rrayField\"\224\002\n\014TaskResponse\022\017\n\007task_id\030\001 "
     "\001(\003\022\017\n\007success\030\002 \001(\010\022\023\n\013result_data\030\003 \001("
     "\014\022\023\n\013result_size\030\004 \001(\004\022\025\n\rerror_message\030"
     "\005 \001(\t\022C\n\021iteration_outputs\030\006 \003(\0132(.task."
-    "TaskResponse.IterationOutputsEntry\0327\n\025It"
-    "erationOutputsEntry\022\013\n\003key\030\001 \001(\003\022\r\n\005valu"
-    "e\030\002 \001(\014:\0028\001\"B\n\rEnvArrayField\022\023\n\013field_in"
-    "dex\030\001 \001(\r\022\016\n\006length\030\002 \001(\004\022\014\n\004data\030\003 \001(\0142"
-    "C\n\013TaskService\0224\n\013ExecuteTask\022\021.task.Tas"
-    "kRequest\032\022.task.TaskResponseb\006proto3"
+    "TaskResponse.IterationOutputsEntry\022#\n\006ar"
+    "rays\030\007 \003(\0132\023.task.EnvArrayField\0327\n\025Itera"
+    "tionOutputsEntry\022\013\n\003key\030\001 \001(\003\022\r\n\005value\030\002"
+    " \001(\014:\0028\001\"B\n\rEnvArrayField\022\023\n\013field_index"
+    "\030\001 \001(\r\022\016\n\006length\030\002 \001(\004\022\014\n\004data\030\003 \001(\0142C\n\013"
+    "TaskService\0224\n\013ExecuteTask\022\021.task.TaskRe"
+    "quest\032\022.task.TaskResponseb\006proto3"
 };
 static ::absl::once_flag descriptor_table_task_5fservice_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_task_5fservice_2eproto = {
     false,
     false,
-    636,
+    673,
     descriptor_table_protodef_task_5fservice_2eproto,
     "task_service.proto",
     &descriptor_table_task_5fservice_2eproto_once,
@@ -856,6 +859,7 @@ inline PROTOBUF_NDEBUG_INLINE TaskResponse::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::task::TaskResponse& from_msg)
       : iteration_outputs_{visibility, arena, from.iteration_outputs_},
+        arrays_{visibility, arena, from.arrays_},
         result_data_(arena, from.result_data_),
         error_message_(arena, from.error_message_),
         _cached_size_{0} {}
@@ -887,6 +891,7 @@ inline PROTOBUF_NDEBUG_INLINE TaskResponse::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
       : iteration_outputs_{visibility, arena},
+        arrays_{visibility, arena},
         result_data_(arena),
         error_message_(arena),
         _cached_size_{0} {}
@@ -927,6 +932,10 @@ constexpr auto TaskResponse::InternalNewImpl_() {
           decltype(TaskResponse::_impl_.iteration_outputs_)::
               InternalGetArenaOffsetAlt(
                   ::google::protobuf::Message::internal_visibility()),
+      PROTOBUF_FIELD_OFFSET(TaskResponse, _impl_.arrays_) +
+          decltype(TaskResponse::_impl_.arrays_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
     return ::google::protobuf::internal::MessageCreator::CopyInit(
@@ -965,16 +974,16 @@ const ::google::protobuf::internal::ClassData* TaskResponse::GetClassData() cons
   return _class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 6, 1, 39, 2> TaskResponse::_table_ = {
+const ::_pbi::TcParseTable<3, 7, 2, 39, 2> TaskResponse::_table_ = {
   {
     0,  // no _has_bits_
     0, // no _extensions_
-    6, 56,  // max_field_number, fast_idx_mask
+    7, 56,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967232,  // skipmap
+    4294967168,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    6,  // num_field_entries
-    1,  // num_aux_entries
+    7,  // num_field_entries
+    2,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
     _class_data_.base(),
     nullptr,  // post_loop_handler
@@ -1000,7 +1009,9 @@ const ::_pbi::TcParseTable<3, 6, 1, 39, 2> TaskResponse::_table_ = {
     {::_pbi::TcParser::FastUS1,
      {42, 63, 0, PROTOBUF_FIELD_OFFSET(TaskResponse, _impl_.error_message_)}},
     {::_pbi::TcParser::MiniParse, {}},
-    {::_pbi::TcParser::MiniParse, {}},
+    // repeated .task.EnvArrayField arrays = 7;
+    {::_pbi::TcParser::FastMtR1,
+     {58, 63, 0, PROTOBUF_FIELD_OFFSET(TaskResponse, _impl_.arrays_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -1020,9 +1031,13 @@ const ::_pbi::TcParseTable<3, 6, 1, 39, 2> TaskResponse::_table_ = {
     {PROTOBUF_FIELD_OFFSET(TaskResponse, _impl_.error_message_), 0, 0,
     (0 | ::_fl::kFcSingular | ::_fl::kUtf8String | ::_fl::kRepAString)},
     // map<int64, bytes> iteration_outputs = 6;
-    {PROTOBUF_FIELD_OFFSET(TaskResponse, _impl_.iteration_outputs_), 0, 0,
+    {PROTOBUF_FIELD_OFFSET(TaskResponse, _impl_.iteration_outputs_), 0, 1,
     (0 | ::_fl::kFcRepeated | ::_fl::kMap)},
+    // repeated .task.EnvArrayField arrays = 7;
+    {PROTOBUF_FIELD_OFFSET(TaskResponse, _impl_.arrays_), 0, 0,
+    (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }}, {{
+    {::_pbi::TcParser::GetTable<::task::EnvArrayField>()},
     {::_pbi::TcParser::GetMapAuxInfo<
         decltype(TaskResponse()._impl_.iteration_outputs_)>(
         0, 0, 0, 3,
@@ -1042,6 +1057,7 @@ PROTOBUF_NOINLINE void TaskResponse::Clear() {
   (void) cached_has_bits;
 
   _impl_.iteration_outputs_.Clear();
+  _impl_.arrays_.Clear();
   _impl_.result_data_.ClearToEmpty();
   _impl_.error_message_.ClearToEmpty();
   ::memset(&_impl_.task_id_, 0, static_cast<::size_t>(
@@ -1121,6 +1137,17 @@ PROTOBUF_NOINLINE void TaskResponse::Clear() {
             }
           }
 
+          // repeated .task.EnvArrayField arrays = 7;
+          for (unsigned i = 0, n = static_cast<unsigned>(
+                                   this_._internal_arrays_size());
+               i < n; i++) {
+            const auto& repfield = this_._internal_arrays().Get(i);
+            target =
+                ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+                    7, repfield, repfield.GetCachedSize(),
+                    target, stream);
+          }
+
           if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
             target =
                 ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -1154,6 +1181,13 @@ PROTOBUF_NOINLINE void TaskResponse::Clear() {
                 total_size += _pbi::MapEntryFuncs<::int64_t, std::string,
                                                _pbi::WireFormatLite::TYPE_INT64,
                                                _pbi::WireFormatLite::TYPE_BYTES>::ByteSizeLong(entry.first, entry.second);
+              }
+            }
+            // repeated .task.EnvArrayField arrays = 7;
+            {
+              total_size += 1UL * this_._internal_arrays_size();
+              for (const auto& msg : this_._internal_arrays()) {
+                total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
               }
             }
           }
@@ -1196,6 +1230,8 @@ void TaskResponse::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
   (void) cached_has_bits;
 
   _this->_impl_.iteration_outputs_.MergeFrom(from._impl_.iteration_outputs_);
+  _this->_internal_mutable_arrays()->MergeFrom(
+      from._internal_arrays());
   if (!from._internal_result_data().empty()) {
     _this->_internal_set_result_data(from._internal_result_data());
   }
@@ -1228,6 +1264,7 @@ void TaskResponse::InternalSwap(TaskResponse* PROTOBUF_RESTRICT other) {
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.iteration_outputs_.InternalSwap(&other->_impl_.iteration_outputs_);
+  _impl_.arrays_.InternalSwap(&other->_impl_.arrays_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.result_data_, &other->_impl_.result_data_, arena);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.error_message_, &other->_impl_.error_message_, arena);
   ::google::protobuf::internal::memswap<

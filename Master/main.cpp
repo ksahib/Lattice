@@ -513,17 +513,20 @@ int main()
                     int ret5 = std::system(final_pass.c_str());
                     if (ret5 != 0)
                     {
+                        
                         throw std::runtime_error("Failed to compile final program");
                     }
 
                     // Expose current IR path to the gRPC runtime so it can send IR to workers.
                     std::string ir_path = savedPath + ".opt.ll";
+                    std::cout << "IR path: " << ir_path << std::endl;
                     setenv("LATTICE_CURRENT_IR", ir_path.c_str(), 1);
 
                     std::string run_command = "./runprog";
                     int ret6 = std::system(run_command.c_str());
                     if (ret6 != 0)
                     {
+                        std::cout << "saved path : " << savedPath << std::endl;
                         throw std::runtime_error("Failed to run final program");
                     }
 

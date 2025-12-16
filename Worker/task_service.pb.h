@@ -486,6 +486,7 @@ class TaskResponse final : public ::google::protobuf::Message
   // accessors -------------------------------------------------------
   enum : int {
     kIterationOutputsFieldNumber = 6,
+    kArraysFieldNumber = 7,
     kResultDataFieldNumber = 3,
     kErrorMessageFieldNumber = 5,
     kTaskIdFieldNumber = 1,
@@ -507,6 +508,23 @@ class TaskResponse final : public ::google::protobuf::Message
   ::google::protobuf::Map<::int64_t, std::string>* _internal_mutable_iteration_outputs();
 
   public:
+  // repeated .task.EnvArrayField arrays = 7;
+  int arrays_size() const;
+  private:
+  int _internal_arrays_size() const;
+
+  public:
+  void clear_arrays() ;
+  ::task::EnvArrayField* mutable_arrays(int index);
+  ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>* mutable_arrays();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>& _internal_arrays() const;
+  ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>* _internal_mutable_arrays();
+  public:
+  const ::task::EnvArrayField& arrays(int index) const;
+  ::task::EnvArrayField* add_arrays();
+  const ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>& arrays() const;
   // bytes result_data = 3;
   void clear_result_data() ;
   const std::string& result_data() const;
@@ -574,7 +592,7 @@ class TaskResponse final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      3, 6, 1,
+      3, 7, 2,
       39, 2>
       _table_;
 
@@ -596,6 +614,7 @@ class TaskResponse final : public ::google::protobuf::Message
                       ::google::protobuf::internal::WireFormatLite::TYPE_INT64,
                       ::google::protobuf::internal::WireFormatLite::TYPE_BYTES>
         iteration_outputs_;
+    ::google::protobuf::RepeatedPtrField< ::task::EnvArrayField > arrays_;
     ::google::protobuf::internal::ArenaStringPtr result_data_;
     ::google::protobuf::internal::ArenaStringPtr error_message_;
     ::int64_t task_id_;
@@ -1498,6 +1517,55 @@ inline ::google::protobuf::Map<::int64_t, std::string>* TaskResponse::_internal_
 inline ::google::protobuf::Map<::int64_t, std::string>* TaskResponse::mutable_iteration_outputs() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_map:task.TaskResponse.iteration_outputs)
   return _internal_mutable_iteration_outputs();
+}
+
+// repeated .task.EnvArrayField arrays = 7;
+inline int TaskResponse::_internal_arrays_size() const {
+  return _internal_arrays().size();
+}
+inline int TaskResponse::arrays_size() const {
+  return _internal_arrays_size();
+}
+inline void TaskResponse::clear_arrays() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.arrays_.Clear();
+}
+inline ::task::EnvArrayField* TaskResponse::mutable_arrays(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:task.TaskResponse.arrays)
+  return _internal_mutable_arrays()->Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>* TaskResponse::mutable_arrays()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable_list:task.TaskResponse.arrays)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_arrays();
+}
+inline const ::task::EnvArrayField& TaskResponse::arrays(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:task.TaskResponse.arrays)
+  return _internal_arrays().Get(index);
+}
+inline ::task::EnvArrayField* TaskResponse::add_arrays() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::task::EnvArrayField* _add = _internal_mutable_arrays()->Add();
+  // @@protoc_insertion_point(field_add:task.TaskResponse.arrays)
+  return _add;
+}
+inline const ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>& TaskResponse::arrays() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_list:task.TaskResponse.arrays)
+  return _internal_arrays();
+}
+inline const ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>&
+TaskResponse::_internal_arrays() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.arrays_;
+}
+inline ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>*
+TaskResponse::_internal_mutable_arrays() {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return &_impl_.arrays_;
 }
 
 // -------------------------------------------------------------------
