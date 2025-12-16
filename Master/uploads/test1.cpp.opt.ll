@@ -5,25 +5,25 @@ target triple = "x86_64-pc-linux-gnu"
 
 %env.struct = type { ptr, ptr }
 
-@__const.main.a = private unnamed_addr constant [6 x i32] [i32 1, i32 2, i32 3, i32 4, i32 5, i32 6], align 16
-@__const.main.b = private unnamed_addr constant [6 x i32] [i32 17, i32 42, i32 23, i32 45, i32 15, i32 67], align 16
+@__const.main.a = private unnamed_addr constant [30 x i32] [i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15, i32 16, i32 17, i32 18, i32 19, i32 20, i32 21, i32 22, i32 23, i32 24, i32 25, i32 26, i32 27, i32 28, i32 29, i32 30], align 16
+@__const.main.b = private unnamed_addr constant [30 x i32] [i32 17, i32 42, i32 23, i32 45, i32 15, i32 67, i32 78, i32 89, i32 90, i32 101, i32 112, i32 123, i32 134, i32 145, i32 156, i32 167, i32 178, i32 189, i32 190, i32 201, i32 212, i32 223, i32 234, i32 245, i32 256, i32 267, i32 278, i32 289, i32 290, i32 301], align 16
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(none) uwtable
 define dso_local noundef i32 @main() local_unnamed_addr #0 {
   %.loc = alloca i64, align 8
-  %1 = alloca [6 x i32], align 16
-  call void @llvm.lifetime.start.p0(i64 24, ptr nonnull %1) #3
+  %1 = alloca [30 x i32], align 16
+  call void @llvm.lifetime.start.p0(i64 120, ptr nonnull %1) #3
   %env_raw = call ptr @malloc(i64 16)
   %env_gep = getelementptr inbounds nuw %env.struct, ptr %env_raw, i32 0, i32 0
   store ptr %1, ptr %env_gep, align 8
   %env_gep1 = getelementptr inbounds nuw %env.struct, ptr %env_raw, i32 0, i32 1
   store ptr %.loc, ptr %env_gep1, align 8
-  call void @parallel_for_runtime(i64 0, i64 6, i64 1, ptr @wrapper, ptr %env_raw)
+  call void @parallel_for_runtime(i64 0, i64 30, i64 1, ptr @wrapper, ptr %env_raw)
   br label %2
 
 2:                                                ; preds = %0
   %3 = load i32, ptr %1, align 16, !tbaa !5
-  call void @llvm.lifetime.end.p0(i64 24, ptr nonnull %1) #3
+  call void @llvm.lifetime.end.p0(i64 120, ptr nonnull %1) #3
   ret i32 %3
 }
 
@@ -39,16 +39,16 @@ newFuncRoot:
   br label %"23"
 
 "23":                                             ; preds = %newFuncRoot
-  %2 = getelementptr inbounds nuw [6 x i32], ptr @__const.main.a, i64 0, i64 %0
+  %2 = getelementptr inbounds nuw [30 x i32], ptr @__const.main.a, i64 0, i64 %0
   %3 = load i32, ptr %2, align 4, !tbaa !5
-  %4 = getelementptr inbounds nuw [6 x i32], ptr @__const.main.b, i64 0, i64 %0
+  %4 = getelementptr inbounds nuw [30 x i32], ptr @__const.main.b, i64 0, i64 %0
   %5 = load i32, ptr %4, align 4, !tbaa !5
   %6 = add nsw i32 %5, %3
-  %7 = getelementptr inbounds nuw [6 x i32], ptr %1, i64 0, i64 %0
+  %7 = getelementptr inbounds nuw [30 x i32], ptr %1, i64 0, i64 %0
   store i32 %6, ptr %7, align 4, !tbaa !5
   %8 = add nuw nsw i64 %0, 1
   store i64 %8, ptr %.out, align 8
-  %9 = icmp eq i64 %8, 6
+  %9 = icmp eq i64 %8, 30
   br i1 %9, label %.exitStub, label %ind_split.exitStub, !llvm.loop !9, !my.loop.parallel !12
 
 .exitStub:                                        ; preds = %"23"

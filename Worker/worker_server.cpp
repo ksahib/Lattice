@@ -101,8 +101,17 @@ static void debug_dump_env_worker(const std::string& label, void* env, size_t en
 static void load_env_metadata(const std::string* json_override) {
     std::lock_guard<std::mutex> lock(g_env_meta_mutex);
     
-    // If already loaded, skip
-    if (!g_env_fields.empty()) return;
+    // If JSON override is provided, clear existing metadata and reload
+    // This ensures we always use the metadata from the request, not stale file data
+    if (json_override && !json_override->empty()) {
+        g_env_fields.clear();
+        g_env_struct_size = 0;
+        std::cerr << "[WORKER] Clearing existing metadata, loading from request JSON (size=" 
+                  << json_override->size() << " bytes)\n";
+    } else if (!g_env_fields.empty()) {
+        // Already loaded from file and no override provided, skip
+        return;
+    }
     
     std::istream* input_stream = nullptr;
     std::ifstream file_stream;
@@ -112,6 +121,7 @@ static void load_env_metadata(const std::string* json_override) {
         // Use JSON from TaskRequest (for cross-PC execution)
         json_stream.str(*json_override);
         input_stream = &json_stream;
+        std::cerr << "[WORKER] Loading metadata from TaskRequest JSON\n";
     } else {
         // Fallback to file (for local testing)
         const char* env_override = std::getenv("ENV_METADATA_PATH");
@@ -151,6 +161,17 @@ static void load_env_metadata(const std::string* json_override) {
             g_env_fields.push_back(m);
         }
     }
+    
+    // Debug: print loaded metadata summary
+    std::cerr << "[WORKER] Loaded metadata: struct_size=" << g_env_struct_size 
+              << ", fields=" << g_env_fields.size() << "\n";
+    for (const auto& meta : g_env_fields) {
+        if (meta.kind == "FIXED_ARRAY" && meta.fixed_length > 0) {
+            std::cerr << "  [field " << meta.index << "] " << meta.kind 
+                      << " fixed_length=" << meta.fixed_length 
+                      << " elem_size=" << meta.elem_size << "\n";
+        }
+    }
 }
 
 class TaskServiceImpl final : public TaskService::Service {
@@ -175,9 +196,13 @@ class TaskServiceImpl final : public TaskService::Service {
 
             // Load metadata from request (if provided) or fallback to file
             // In proto3, string fields are always present (empty if not set)
+            std::cerr << "[WORKER] Received metadata JSON size: " 
+                      << request->env_metadata_json().size() << " bytes\n";
             if (!request->env_metadata_json().empty()) {
+                std::cerr << "[WORKER] Using metadata from TaskRequest\n";
                 load_env_metadata(&request->env_metadata_json());
             } else {
+                std::cerr << "[WORKER] No metadata in request, falling back to file\n";
                 load_env_metadata(nullptr);  // fallback to file
             }
             

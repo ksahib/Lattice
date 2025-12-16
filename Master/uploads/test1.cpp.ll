@@ -3,31 +3,31 @@ source_filename = "./uploads/test1.cpp"
 target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-pc-linux-gnu"
 
-@__const.main.a = private unnamed_addr constant [6 x i32] [i32 1, i32 2, i32 3, i32 4, i32 5, i32 6], align 16
-@__const.main.b = private unnamed_addr constant [6 x i32] [i32 17, i32 42, i32 23, i32 45, i32 15, i32 67], align 16
+@__const.main.a = private unnamed_addr constant [30 x i32] [i32 1, i32 2, i32 3, i32 4, i32 5, i32 6, i32 7, i32 8, i32 9, i32 10, i32 11, i32 12, i32 13, i32 14, i32 15, i32 16, i32 17, i32 18, i32 19, i32 20, i32 21, i32 22, i32 23, i32 24, i32 25, i32 26, i32 27, i32 28, i32 29, i32 30], align 16
+@__const.main.b = private unnamed_addr constant [30 x i32] [i32 17, i32 42, i32 23, i32 45, i32 15, i32 67, i32 78, i32 89, i32 90, i32 101, i32 112, i32 123, i32 134, i32 145, i32 156, i32 167, i32 178, i32 189, i32 190, i32 201, i32 212, i32 223, i32 234, i32 245, i32 256, i32 267, i32 278, i32 289, i32 290, i32 301], align 16
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(none) uwtable
 define dso_local noundef i32 @main() local_unnamed_addr #0 {
-  %1 = alloca [6 x i32], align 16
-  call void @llvm.lifetime.start.p0(i64 24, ptr nonnull %1) #2
+  %1 = alloca [30 x i32], align 16
+  call void @llvm.lifetime.start.p0(i64 120, ptr nonnull %1) #2
   br label %4
 
 2:                                                ; preds = %4
   %3 = load i32, ptr %1, align 16, !tbaa !5
-  call void @llvm.lifetime.end.p0(i64 24, ptr nonnull %1) #2
+  call void @llvm.lifetime.end.p0(i64 120, ptr nonnull %1) #2
   ret i32 %3
 
 4:                                                ; preds = %0, %4
   %5 = phi i64 [ 0, %0 ], [ %12, %4 ]
-  %6 = getelementptr inbounds nuw [6 x i32], ptr @__const.main.a, i64 0, i64 %5
+  %6 = getelementptr inbounds nuw [30 x i32], ptr @__const.main.a, i64 0, i64 %5
   %7 = load i32, ptr %6, align 4, !tbaa !5
-  %8 = getelementptr inbounds nuw [6 x i32], ptr @__const.main.b, i64 0, i64 %5
+  %8 = getelementptr inbounds nuw [30 x i32], ptr @__const.main.b, i64 0, i64 %5
   %9 = load i32, ptr %8, align 4, !tbaa !5
   %10 = add nsw i32 %9, %7
-  %11 = getelementptr inbounds nuw [6 x i32], ptr %1, i64 0, i64 %5
+  %11 = getelementptr inbounds nuw [30 x i32], ptr %1, i64 0, i64 %5
   store i32 %10, ptr %11, align 4, !tbaa !5
   %12 = add nuw nsw i64 %5, 1
-  %13 = icmp eq i64 %12, 6
+  %13 = icmp eq i64 %12, 30
   br i1 %13, label %2, label %4, !llvm.loop !9
 }
 

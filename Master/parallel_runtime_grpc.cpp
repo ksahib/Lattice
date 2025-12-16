@@ -336,9 +336,11 @@ bool execute_task_on_worker(
         std::string meta_json((std::istreambuf_iterator<char>(meta_file)),
                               std::istreambuf_iterator<char>());
         request.set_env_metadata_json(meta_json);
+        std::cerr << "[MASTER] Sending metadata JSON (size=" << meta_json.size() 
+                  << " bytes) from " << meta_path << "\n";
         meta_file.close();
     } else {
-        std::cerr << "Warning: Could not read env_metadata.json from " << meta_path << "\n";
+        std::cerr << "[MASTER] Warning: Could not read env_metadata.json from " << meta_path << "\n";
     }
 
     // Attach logical array payloads using env metadata
