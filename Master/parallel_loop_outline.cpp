@@ -515,6 +515,59 @@ llvm::Function *outlineLoop(llvm::Function &F, llvm::LoopInfo &LI, llvm::Dominat
                     ofs  << NewEnvSize << "\n";
                 }
             }
+            // Emit env metadata JSON for runtime serialization
+            {
+                const char *MetaPath = "/home/niloy/vs_code/course/cse299/Lattice/Worker/env_metadata.json";
+                std::ofstream meta(MetaPath, std::ios::trunc);
+                if (!meta.is_open()) {
+                    llvm::errs() << "Failed to open " << MetaPath << " for writing\n";
+                } else {
+                    const llvm::DataLayout &DL = M->getDataLayout();
+                    const llvm::StructLayout *SL = DL.getStructLayout(NewEnvStructTy);
+                    meta << "{\n";
+                    meta << "  \"struct_size\": " << NewEnvSize << ",\n";
+                    meta << "  \"fields\": [\n";
+                    for (unsigned k = 0; k < NewEnvFieldTys.size(); ++k) {
+                        llvm::Type *FTy = NewEnvFieldTys[k];
+                        uint64_t offset = SL->getElementOffset(k);
+                        std::string kind = "SCALAR";
+                        uint64_t elemSize = 0;
+                        int lenField = -1;
+                        if (FTy->isPointerTy()) {
+                            kind = "POINTER_ARRAY";
+                        
+                            llvm::Type *ElemTy = nullptr;
+                            llvm::Value *orig = NewEnvOriginVals[k];
+                        
+                            if (auto *AI = llvm::dyn_cast<llvm::AllocaInst>(orig)) {
+                                ElemTy = AI->getAllocatedType();
+                            }
+                            else if (auto *GV = llvm::dyn_cast<llvm::GlobalVariable>(orig)) {
+                                ElemTy = GV->getValueType();
+                            }
+                        
+                            if (ElemTy)
+                                elemSize = DL.getTypeAllocSize(ElemTy);
+                            else
+                                elemSize = 0;  // opaque pointer
+                        
+                            if (k + 1 < NewEnvFieldTys.size() &&
+                                NewEnvFieldTys[k + 1]->isIntegerTy()) {
+                                lenField = static_cast<int>(k + 1);
+                            }
+                        }
+                        meta << "    {\"index\": " << k
+                             << ", \"offset\": " << offset
+                             << ", \"kind\": \"" << kind << "\""
+                             << ", \"elem_size\": " << elemSize
+                             << ", \"len_field\": " << lenField
+                             << "}";
+                        if (k + 1 < NewEnvFieldTys.size()) meta << ",";
+                        meta << "\n";
+                    }
+                    meta << "  ]\n}\n";
+                }
+            }
             llvm::FunctionCallee MallocFn = M->getOrInsertFunction("malloc",
                                                                    llvm::FunctionType::get(Int8PtrTy, {Int64Ty}, false));
             llvm::Value *RawPtr = B.CreateCall(MallocFn, {SizeConst}, "env_raw"); // i8*

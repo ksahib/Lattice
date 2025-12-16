@@ -9,6 +9,8 @@
 #include <curl/curl.h>
 #include <json/json.h>
 #include <fstream>
+#include <map>
+#include <mutex>
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -18,10 +20,62 @@ using task::TaskService;
 using task::TaskRequest;
 using task::TaskResponse;
 
-// Function pointer type for outlined function
-// Match the IR signature, e.g.:
-//   define dso_local i1 @outlined_main_loopbody(i64 %0, ptr %1, ptr %.out)
-using outlined_fn_t = bool (*)(int64_t, void*, void*);
+// Function pointer type for outlined wrapper:
+//   wrapper(i64 idx, i8* env) -> void
+using outlined_fn_t = void (*)(int64_t, void*);
+
+// Env metadata structures
+struct EnvFieldMeta {
+    int index = -1;
+    uint64_t offset = 0;
+    std::string kind; // "SCALAR" or "POINTER_ARRAY"
+    uint64_t elem_size = 0;
+    int len_field = -1;
+};
+
+static std::vector<EnvFieldMeta> g_env_fields;
+static uint64_t g_env_struct_size = 0;
+static std::once_flag g_env_meta_once;
+
+static void load_env_metadata() {
+    std::call_once(g_env_meta_once, []() {
+        // Allow overriding via ENV_METADATA_PATH env var, else use local Worker path, else /tmp.
+        const char* env_override = std::getenv("ENV_METADATA_PATH");
+        const char* fallback1 = "/home/niloy/vs_code/course/cse299/Lattice/Worker/env_metadata.json";
+        const char* fallback2 = "/tmp/env_metadata.json";
+        const char* path = env_override ? env_override : fallback1;
+        std::ifstream ifs(path);
+        if (!ifs.is_open()) {
+            // try fallback
+            path = fallback2;
+            ifs.open(path);
+        }
+        if (!ifs.is_open()) {
+            std::cerr << "env meta: cannot open " << path << " (also tried env override and /tmp)\n";
+            return;
+        }
+        Json::Value root;
+        Json::CharReaderBuilder builder;
+        std::string errs;
+        if (!Json::parseFromStream(builder, ifs, &root, &errs)) {
+            std::cerr << "env meta: parse failed: " << errs << "\n";
+            return;
+        }
+        if (root.isMember("struct_size"))
+            g_env_struct_size = root["struct_size"].asUInt64();
+        if (root.isMember("fields") && root["fields"].isArray()) {
+            for (const auto& f : root["fields"]) {
+                EnvFieldMeta m;
+                if (f.isMember("index")) m.index = f["index"].asInt();
+                if (f.isMember("offset")) m.offset = f["offset"].asUInt64();
+                if (f.isMember("kind")) m.kind = f["kind"].asString();
+                if (f.isMember("elem_size")) m.elem_size = f["elem_size"].asUInt64();
+                if (f.isMember("len_field")) m.len_field = f["len_field"].asInt();
+                g_env_fields.push_back(m);
+            }
+        }
+    });
+}
 
 class TaskServiceImpl final : public TaskService::Service {
     Status ExecuteTask(ServerContext* context,
@@ -42,6 +96,33 @@ class TaskServiceImpl final : public TaskService::Service {
             
             memcpy(env, request->environment_data().data(), 
                    std::min(env_size, request->environment_data().size()));
+
+            // Reconstruct pointer arrays using metadata and request.arrays
+            load_env_metadata();
+            std::map<int, const task::EnvArrayField*> arrayMap;
+            for (int i = 0; i < request->arrays_size(); ++i) {
+                const task::EnvArrayField& a = request->arrays(i);
+                arrayMap[a.field_index()] = &a;
+            }
+            for (const auto& meta : g_env_fields) {
+                if (meta.kind != "POINTER_ARRAY") continue;
+                auto it = arrayMap.find(meta.index);
+                if (it == arrayMap.end()) {
+                    continue;
+                }
+                const task::EnvArrayField* arr = it->second;
+                uint64_t len = arr->length();
+                uint64_t bytes = len * meta.elem_size;
+                if (bytes == 0 || arr->data().size() < bytes) continue;
+                void* buf = malloc(bytes);
+                if (!buf) continue;
+                memcpy(buf, arr->data().data(), bytes);
+                // write pointer value into env at offset
+                if (meta.offset + sizeof(uintptr_t) <= env_size) {
+                    uintptr_t p = reinterpret_cast<uintptr_t>(buf);
+                    memcpy(static_cast<char*>(env) + meta.offset, &p, sizeof(uintptr_t));
+                }
+            }
             
             // --- Compile IR on worker and load outlined function ---
             // 1) Write IR to a temporary file
@@ -86,13 +167,13 @@ class TaskServiceImpl final : public TaskService::Service {
                 return Status::OK;
             }
 
-            // Execute loop iterations
+            // Execute loop iterations via wrapper(idx, env)
             int64_t start = request->start();
             int64_t end = request->end();
             int64_t step = request->step();
             
             for (int64_t i = start; i < end; i += step) {
-                (void)outlined_fn(i, env, nullptr);
+                outlined_fn(i, env);
             }
             
             // Serialize updated environment as result

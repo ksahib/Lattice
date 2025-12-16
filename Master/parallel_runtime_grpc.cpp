@@ -28,6 +28,19 @@ static std::mutex channel_cache_mutex;
 // Environment size (set by LLVM pass and written to /tmp/env_struct_size.txt)
 static uint64_t g_current_env_size = 0;
 
+// Metadata about env struct fields
+struct EnvFieldMeta {
+    int index = -1;
+    uint64_t offset = 0;
+    std::string kind; // "SCALAR" or "POINTER_ARRAY"
+    uint64_t elem_size = 0;
+    int len_field = -1; // index of length field (scalar), or -1 if unknown
+};
+
+static std::vector<EnvFieldMeta> g_env_fields;
+static uint64_t g_env_struct_size = 0;
+static std::once_flag g_env_meta_once;
+
 // Read environment size from file written by loop outliner pass
 static uint64_t read_env_size_from_file() {
     const char* path = "/tmp/env_struct_size.txt";
@@ -50,6 +63,38 @@ static uint64_t read_env_size_from_file() {
     else
         std::cerr << "env size: " << last << "\n";
     return last;
+}
+
+// Read env metadata JSON emitted by the outliner (/tmp/env_metadata.json)
+static void load_env_metadata() {
+    std::call_once(g_env_meta_once, []() {
+        const char* path = "/home/niloy/vs_code/course/cse299/Lattice/Worker/env_metadata.json";
+        std::ifstream ifs(path);
+        if (!ifs.is_open()) {
+            std::cerr << "env meta: cannot open " << path << "\n";
+            return;
+        }
+        Json::Value root;
+        Json::CharReaderBuilder builder;
+        std::string errs;
+        if (!Json::parseFromStream(builder, ifs, &root, &errs)) {
+            std::cerr << "env meta: parse failed: " << errs << "\n";
+            return;
+        }
+        if (root.isMember("struct_size"))
+            g_env_struct_size = root["struct_size"].asUInt64();
+        if (root.isMember("fields") && root["fields"].isArray()) {
+            for (const auto& f : root["fields"]) {
+                EnvFieldMeta m;
+                if (f.isMember("index")) m.index = f["index"].asInt();
+                if (f.isMember("offset")) m.offset = f["offset"].asUInt64();
+                if (f.isMember("kind")) m.kind = f["kind"].asString();
+                if (f.isMember("elem_size")) m.elem_size = f["elem_size"].asUInt64();
+                if (f.isMember("len_field")) m.len_field = f["len_field"].asInt();
+                g_env_fields.push_back(m);
+            }
+        }
+    });
 }
 
 // Read current outlined IR from path provided via env var LATTICE_CURRENT_IR
@@ -195,13 +240,53 @@ bool execute_task_on_worker(
     request.set_step(step);
     request.set_environment_data(serialize_environment(env, env_size));
     request.set_environment_size(env_size);
-    request.set_function_name("outlined_main_loopbody");
+    // Call the LLVM-generated wrapper(i64, i8*) instead of the raw outlined function.
+    request.set_function_name("wrapper");
 
     // Attach current outlined IR so the worker can compile it locally
     std::string ir_data = read_ir_from_env();
     if (!ir_data.empty()) {
         request.set_ir_data(ir_data);
         request.set_ir_format("ll"); // we send textual LLVM IR (.opt.ll)
+    }
+
+    // Attach logical array payloads using env metadata
+    load_env_metadata();
+    // map field index to meta for quick access to len field offsets
+    for (const auto& meta : g_env_fields) {
+        if (meta.kind != "POINTER_ARRAY") continue;
+        if (meta.len_field < 0) continue;
+
+        // Read length from env using len_field's offset (assume 64-bit length)
+        uint64_t len = 0;
+        auto len_it = std::find_if(g_env_fields.begin(), g_env_fields.end(),
+                                   [&](const EnvFieldMeta& m){ return m.index == meta.len_field; });
+        if (len_it != g_env_fields.end()) {
+            size_t len_off = len_it->offset;
+            if (len_off + sizeof(uint64_t) <= env_size) {
+                memcpy(&len, static_cast<char*>(env) + len_off, sizeof(uint64_t));
+            }
+        }
+        if (len == 0 || meta.elem_size == 0) continue;
+
+        // Read pointer value from env at meta.offset
+        uintptr_t ptr_val = 0;
+        if (meta.offset + sizeof(uintptr_t) <= env_size) {
+            memcpy(&ptr_val, static_cast<char*>(env) + meta.offset, sizeof(uintptr_t));
+        }
+        if (ptr_val == 0) continue;
+
+        // Copy array data
+        const char* src = reinterpret_cast<const char*>(ptr_val);
+        uint64_t bytes = len * meta.elem_size;
+        try {
+            task::EnvArrayField* arr = request.add_arrays();
+            arr->set_field_index(meta.index);
+            arr->set_length(len);
+            arr->set_data(src, bytes);
+        } catch (...) {
+            std::cerr << "env meta: failed to append array payload for field " << meta.index << "\n";
+        }
     }
     
     TaskResponse response;

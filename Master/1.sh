@@ -13,7 +13,7 @@ if ! command -v ${LLVM_CONFIG} &> /dev/null; then
     exit 1
 fi
 
-curl -X POST -F "file=@//home/niloy/vs_code/course/cse299/test1.cpp" http://localhost:8080/upload
+# curl -X POST -F "file=@//home/niloy/vs_code/course/cse299/test1.cpp" http://localhost:8080/upload
 # Get LLVM flags
 CXXFLAGS=$(${LLVM_CONFIG} --cxxflags)
 LDFLAGS=$(${LLVM_CONFIG} --ldflags)

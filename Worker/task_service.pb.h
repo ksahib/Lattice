@@ -55,6 +55,9 @@ struct TableStruct_task_5fservice_2eproto {
 extern const ::google::protobuf::internal::DescriptorTable
     descriptor_table_task_5fservice_2eproto;
 namespace task {
+class EnvArrayField;
+struct EnvArrayFieldDefaultTypeInternal;
+extern EnvArrayFieldDefaultTypeInternal _EnvArrayField_default_instance_;
 class TaskRequest;
 struct TaskRequestDefaultTypeInternal;
 extern TaskRequestDefaultTypeInternal _TaskRequest_default_instance_;
@@ -116,31 +119,31 @@ class TaskResponse_IterationOutputsEntry_DoNotUse final
 };
 // -------------------------------------------------------------------
 
-class TaskRequest final : public ::google::protobuf::Message
-/* @@protoc_insertion_point(class_definition:task.TaskRequest) */ {
+class EnvArrayField final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:task.EnvArrayField) */ {
  public:
-  inline TaskRequest() : TaskRequest(nullptr) {}
-  ~TaskRequest() PROTOBUF_FINAL;
+  inline EnvArrayField() : EnvArrayField(nullptr) {}
+  ~EnvArrayField() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(TaskRequest* msg, std::destroying_delete_t) {
+  void operator delete(EnvArrayField* msg, std::destroying_delete_t) {
     SharedDtor(*msg);
-    ::google::protobuf::internal::SizedDelete(msg, sizeof(TaskRequest));
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(EnvArrayField));
   }
 #endif
 
   template <typename = void>
-  explicit PROTOBUF_CONSTEXPR TaskRequest(
+  explicit PROTOBUF_CONSTEXPR EnvArrayField(
       ::google::protobuf::internal::ConstantInitialized);
 
-  inline TaskRequest(const TaskRequest& from) : TaskRequest(nullptr, from) {}
-  inline TaskRequest(TaskRequest&& from) noexcept
-      : TaskRequest(nullptr, std::move(from)) {}
-  inline TaskRequest& operator=(const TaskRequest& from) {
+  inline EnvArrayField(const EnvArrayField& from) : EnvArrayField(nullptr, from) {}
+  inline EnvArrayField(EnvArrayField&& from) noexcept
+      : EnvArrayField(nullptr, std::move(from)) {}
+  inline EnvArrayField& operator=(const EnvArrayField& from) {
     CopyFrom(from);
     return *this;
   }
-  inline TaskRequest& operator=(TaskRequest&& from) noexcept {
+  inline EnvArrayField& operator=(EnvArrayField&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
@@ -168,16 +171,16 @@ class TaskRequest final : public ::google::protobuf::Message
   static const ::google::protobuf::Reflection* GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const TaskRequest& default_instance() {
+  static const EnvArrayField& default_instance() {
     return *internal_default_instance();
   }
-  static inline const TaskRequest* internal_default_instance() {
-    return reinterpret_cast<const TaskRequest*>(
-        &_TaskRequest_default_instance_);
+  static inline const EnvArrayField* internal_default_instance() {
+    return reinterpret_cast<const EnvArrayField*>(
+        &_EnvArrayField_default_instance_);
   }
-  static constexpr int kIndexInFileMessages = 0;
-  friend void swap(TaskRequest& a, TaskRequest& b) { a.Swap(&b); }
-  inline void Swap(TaskRequest* other) {
+  static constexpr int kIndexInFileMessages = 3;
+  friend void swap(EnvArrayField& a, EnvArrayField& b) { a.Swap(&b); }
+  inline void Swap(EnvArrayField* other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -185,7 +188,7 @@ class TaskRequest final : public ::google::protobuf::Message
       ::google::protobuf::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(TaskRequest* other) {
+  void UnsafeArenaSwap(EnvArrayField* other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
@@ -193,13 +196,13 @@ class TaskRequest final : public ::google::protobuf::Message
 
   // implements Message ----------------------------------------------
 
-  TaskRequest* New(::google::protobuf::Arena* arena = nullptr) const {
-    return ::google::protobuf::Message::DefaultConstruct<TaskRequest>(arena);
+  EnvArrayField* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<EnvArrayField>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
-  void CopyFrom(const TaskRequest& from);
+  void CopyFrom(const EnvArrayField& from);
   using ::google::protobuf::Message::MergeFrom;
-  void MergeFrom(const TaskRequest& from) { TaskRequest::MergeImpl(*this, from); }
+  void MergeFrom(const EnvArrayField& from) { EnvArrayField::MergeImpl(*this, from); }
 
   private:
   static void MergeImpl(
@@ -236,18 +239,18 @@ class TaskRequest final : public ::google::protobuf::Message
   private:
   void SharedCtor(::google::protobuf::Arena* arena);
   static void SharedDtor(MessageLite& self);
-  void InternalSwap(TaskRequest* other);
+  void InternalSwap(EnvArrayField* other);
  private:
   template <typename T>
   friend ::absl::string_view(
       ::google::protobuf::internal::GetAnyMessageName)();
-  static ::absl::string_view FullMessageName() { return "task.TaskRequest"; }
+  static ::absl::string_view FullMessageName() { return "task.EnvArrayField"; }
 
  protected:
-  explicit TaskRequest(::google::protobuf::Arena* arena);
-  TaskRequest(::google::protobuf::Arena* arena, const TaskRequest& from);
-  TaskRequest(::google::protobuf::Arena* arena, TaskRequest&& from) noexcept
-      : TaskRequest(arena) {
+  explicit EnvArrayField(::google::protobuf::Arena* arena);
+  EnvArrayField(::google::protobuf::Arena* arena, const EnvArrayField& from);
+  EnvArrayField(::google::protobuf::Arena* arena, EnvArrayField&& from) noexcept
+      : EnvArrayField(arena) {
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
@@ -262,137 +265,53 @@ class TaskRequest final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kEnvironmentDataFieldNumber = 5,
-    kFunctionNameFieldNumber = 7,
-    kIrDataFieldNumber = 8,
-    kIrFormatFieldNumber = 9,
-    kTaskIdFieldNumber = 1,
-    kStartFieldNumber = 2,
-    kEndFieldNumber = 3,
-    kStepFieldNumber = 4,
-    kEnvironmentSizeFieldNumber = 6,
+    kDataFieldNumber = 3,
+    kLengthFieldNumber = 2,
+    kFieldIndexFieldNumber = 1,
   };
-  // bytes environment_data = 5;
-  void clear_environment_data() ;
-  const std::string& environment_data() const;
+  // bytes data = 3;
+  void clear_data() ;
+  const std::string& data() const;
   template <typename Arg_ = const std::string&, typename... Args_>
-  void set_environment_data(Arg_&& arg, Args_... args);
-  std::string* mutable_environment_data();
-  PROTOBUF_NODISCARD std::string* release_environment_data();
-  void set_allocated_environment_data(std::string* value);
+  void set_data(Arg_&& arg, Args_... args);
+  std::string* mutable_data();
+  PROTOBUF_NODISCARD std::string* release_data();
+  void set_allocated_data(std::string* value);
 
   private:
-  const std::string& _internal_environment_data() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_environment_data(
+  const std::string& _internal_data() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_data(
       const std::string& value);
-  std::string* _internal_mutable_environment_data();
+  std::string* _internal_mutable_data();
 
   public:
-  // string function_name = 7;
-  void clear_function_name() ;
-  const std::string& function_name() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_function_name(Arg_&& arg, Args_... args);
-  std::string* mutable_function_name();
-  PROTOBUF_NODISCARD std::string* release_function_name();
-  void set_allocated_function_name(std::string* value);
+  // uint64 length = 2;
+  void clear_length() ;
+  ::uint64_t length() const;
+  void set_length(::uint64_t value);
 
   private:
-  const std::string& _internal_function_name() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_function_name(
-      const std::string& value);
-  std::string* _internal_mutable_function_name();
+  ::uint64_t _internal_length() const;
+  void _internal_set_length(::uint64_t value);
 
   public:
-  // bytes ir_data = 8;
-  void clear_ir_data() ;
-  const std::string& ir_data() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_ir_data(Arg_&& arg, Args_... args);
-  std::string* mutable_ir_data();
-  PROTOBUF_NODISCARD std::string* release_ir_data();
-  void set_allocated_ir_data(std::string* value);
+  // uint32 field_index = 1;
+  void clear_field_index() ;
+  ::uint32_t field_index() const;
+  void set_field_index(::uint32_t value);
 
   private:
-  const std::string& _internal_ir_data() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ir_data(
-      const std::string& value);
-  std::string* _internal_mutable_ir_data();
+  ::uint32_t _internal_field_index() const;
+  void _internal_set_field_index(::uint32_t value);
 
   public:
-  // string ir_format = 9;
-  void clear_ir_format() ;
-  const std::string& ir_format() const;
-  template <typename Arg_ = const std::string&, typename... Args_>
-  void set_ir_format(Arg_&& arg, Args_... args);
-  std::string* mutable_ir_format();
-  PROTOBUF_NODISCARD std::string* release_ir_format();
-  void set_allocated_ir_format(std::string* value);
-
-  private:
-  const std::string& _internal_ir_format() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ir_format(
-      const std::string& value);
-  std::string* _internal_mutable_ir_format();
-
-  public:
-  // int64 task_id = 1;
-  void clear_task_id() ;
-  ::int64_t task_id() const;
-  void set_task_id(::int64_t value);
-
-  private:
-  ::int64_t _internal_task_id() const;
-  void _internal_set_task_id(::int64_t value);
-
-  public:
-  // int64 start = 2;
-  void clear_start() ;
-  ::int64_t start() const;
-  void set_start(::int64_t value);
-
-  private:
-  ::int64_t _internal_start() const;
-  void _internal_set_start(::int64_t value);
-
-  public:
-  // int64 end = 3;
-  void clear_end() ;
-  ::int64_t end() const;
-  void set_end(::int64_t value);
-
-  private:
-  ::int64_t _internal_end() const;
-  void _internal_set_end(::int64_t value);
-
-  public:
-  // int64 step = 4;
-  void clear_step() ;
-  ::int64_t step() const;
-  void set_step(::int64_t value);
-
-  private:
-  ::int64_t _internal_step() const;
-  void _internal_set_step(::int64_t value);
-
-  public:
-  // uint64 environment_size = 6;
-  void clear_environment_size() ;
-  ::uint64_t environment_size() const;
-  void set_environment_size(::uint64_t value);
-
-  private:
-  ::uint64_t _internal_environment_size() const;
-  void _internal_set_environment_size(::uint64_t value);
-
-  public:
-  // @@protoc_insertion_point(class_scope:task.TaskRequest)
+  // @@protoc_insertion_point(class_scope:task.EnvArrayField)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      4, 9, 0,
-      55, 2>
+      2, 3, 0,
+      0, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -408,16 +327,10 @@ class TaskRequest final : public ::google::protobuf::Message
                           ::google::protobuf::Arena* arena);
     inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
                           ::google::protobuf::Arena* arena, const Impl_& from,
-                          const TaskRequest& from_msg);
-    ::google::protobuf::internal::ArenaStringPtr environment_data_;
-    ::google::protobuf::internal::ArenaStringPtr function_name_;
-    ::google::protobuf::internal::ArenaStringPtr ir_data_;
-    ::google::protobuf::internal::ArenaStringPtr ir_format_;
-    ::int64_t task_id_;
-    ::int64_t start_;
-    ::int64_t end_;
-    ::int64_t step_;
-    ::uint64_t environment_size_;
+                          const EnvArrayField& from_msg);
+    ::google::protobuf::internal::ArenaStringPtr data_;
+    ::uint64_t length_;
+    ::uint32_t field_index_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
@@ -688,6 +601,335 @@ class TaskResponse final : public ::google::protobuf::Message
     ::int64_t task_id_;
     ::uint64_t result_size_;
     bool success_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
+    PROTOBUF_TSAN_DECLARE_MEMBER
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_task_5fservice_2eproto;
+};
+// -------------------------------------------------------------------
+
+class TaskRequest final : public ::google::protobuf::Message
+/* @@protoc_insertion_point(class_definition:task.TaskRequest) */ {
+ public:
+  inline TaskRequest() : TaskRequest(nullptr) {}
+  ~TaskRequest() PROTOBUF_FINAL;
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+  void operator delete(TaskRequest* msg, std::destroying_delete_t) {
+    SharedDtor(*msg);
+    ::google::protobuf::internal::SizedDelete(msg, sizeof(TaskRequest));
+  }
+#endif
+
+  template <typename = void>
+  explicit PROTOBUF_CONSTEXPR TaskRequest(
+      ::google::protobuf::internal::ConstantInitialized);
+
+  inline TaskRequest(const TaskRequest& from) : TaskRequest(nullptr, from) {}
+  inline TaskRequest(TaskRequest&& from) noexcept
+      : TaskRequest(nullptr, std::move(from)) {}
+  inline TaskRequest& operator=(const TaskRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline TaskRequest& operator=(TaskRequest&& from) noexcept {
+    if (this == &from) return *this;
+    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::google::protobuf::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::google::protobuf::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const TaskRequest& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const TaskRequest* internal_default_instance() {
+    return reinterpret_cast<const TaskRequest*>(
+        &_TaskRequest_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages = 0;
+  friend void swap(TaskRequest& a, TaskRequest& b) { a.Swap(&b); }
+  inline void Swap(TaskRequest* other) {
+    if (other == this) return;
+    if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+      InternalSwap(other);
+    } else {
+      ::google::protobuf::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(TaskRequest* other) {
+    if (other == this) return;
+    ABSL_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  TaskRequest* New(::google::protobuf::Arena* arena = nullptr) const {
+    return ::google::protobuf::Message::DefaultConstruct<TaskRequest>(arena);
+  }
+  using ::google::protobuf::Message::CopyFrom;
+  void CopyFrom(const TaskRequest& from);
+  using ::google::protobuf::Message::MergeFrom;
+  void MergeFrom(const TaskRequest& from) { TaskRequest::MergeImpl(*this, from); }
+
+  private:
+  static void MergeImpl(
+      ::google::protobuf::MessageLite& to_msg,
+      const ::google::protobuf::MessageLite& from_msg);
+
+  public:
+  bool IsInitialized() const {
+    return true;
+  }
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
+  private:
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* _InternalSerialize(
+      const MessageLite& msg, ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream);
+
+  public:
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const {
+    return _InternalSerialize(*this, target, stream);
+  }
+  #else   // PROTOBUF_CUSTOM_VTABLE
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target,
+      ::google::protobuf::io::EpsCopyOutputStream* stream) const final;
+  #endif  // PROTOBUF_CUSTOM_VTABLE
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(TaskRequest* other);
+ private:
+  template <typename T>
+  friend ::absl::string_view(
+      ::google::protobuf::internal::GetAnyMessageName)();
+  static ::absl::string_view FullMessageName() { return "task.TaskRequest"; }
+
+ protected:
+  explicit TaskRequest(::google::protobuf::Arena* arena);
+  TaskRequest(::google::protobuf::Arena* arena, const TaskRequest& from);
+  TaskRequest(::google::protobuf::Arena* arena, TaskRequest&& from) noexcept
+      : TaskRequest(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* GetClassData() const PROTOBUF_FINAL;
+  static void* PlacementNew_(const void*, void* mem,
+                             ::google::protobuf::Arena* arena);
+  static constexpr auto InternalNewImpl_();
+  static const ::google::protobuf::internal::ClassDataFull _class_data_;
+
+ public:
+  ::google::protobuf::Metadata GetMetadata() const;
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+  enum : int {
+    kArraysFieldNumber = 10,
+    kEnvironmentDataFieldNumber = 5,
+    kFunctionNameFieldNumber = 7,
+    kIrDataFieldNumber = 8,
+    kIrFormatFieldNumber = 9,
+    kTaskIdFieldNumber = 1,
+    kStartFieldNumber = 2,
+    kEndFieldNumber = 3,
+    kStepFieldNumber = 4,
+    kEnvironmentSizeFieldNumber = 6,
+  };
+  // repeated .task.EnvArrayField arrays = 10;
+  int arrays_size() const;
+  private:
+  int _internal_arrays_size() const;
+
+  public:
+  void clear_arrays() ;
+  ::task::EnvArrayField* mutable_arrays(int index);
+  ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>* mutable_arrays();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>& _internal_arrays() const;
+  ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>* _internal_mutable_arrays();
+  public:
+  const ::task::EnvArrayField& arrays(int index) const;
+  ::task::EnvArrayField* add_arrays();
+  const ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>& arrays() const;
+  // bytes environment_data = 5;
+  void clear_environment_data() ;
+  const std::string& environment_data() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_environment_data(Arg_&& arg, Args_... args);
+  std::string* mutable_environment_data();
+  PROTOBUF_NODISCARD std::string* release_environment_data();
+  void set_allocated_environment_data(std::string* value);
+
+  private:
+  const std::string& _internal_environment_data() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_environment_data(
+      const std::string& value);
+  std::string* _internal_mutable_environment_data();
+
+  public:
+  // string function_name = 7;
+  void clear_function_name() ;
+  const std::string& function_name() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_function_name(Arg_&& arg, Args_... args);
+  std::string* mutable_function_name();
+  PROTOBUF_NODISCARD std::string* release_function_name();
+  void set_allocated_function_name(std::string* value);
+
+  private:
+  const std::string& _internal_function_name() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_function_name(
+      const std::string& value);
+  std::string* _internal_mutable_function_name();
+
+  public:
+  // bytes ir_data = 8;
+  void clear_ir_data() ;
+  const std::string& ir_data() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_ir_data(Arg_&& arg, Args_... args);
+  std::string* mutable_ir_data();
+  PROTOBUF_NODISCARD std::string* release_ir_data();
+  void set_allocated_ir_data(std::string* value);
+
+  private:
+  const std::string& _internal_ir_data() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ir_data(
+      const std::string& value);
+  std::string* _internal_mutable_ir_data();
+
+  public:
+  // string ir_format = 9;
+  void clear_ir_format() ;
+  const std::string& ir_format() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_ir_format(Arg_&& arg, Args_... args);
+  std::string* mutable_ir_format();
+  PROTOBUF_NODISCARD std::string* release_ir_format();
+  void set_allocated_ir_format(std::string* value);
+
+  private:
+  const std::string& _internal_ir_format() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ir_format(
+      const std::string& value);
+  std::string* _internal_mutable_ir_format();
+
+  public:
+  // int64 task_id = 1;
+  void clear_task_id() ;
+  ::int64_t task_id() const;
+  void set_task_id(::int64_t value);
+
+  private:
+  ::int64_t _internal_task_id() const;
+  void _internal_set_task_id(::int64_t value);
+
+  public:
+  // int64 start = 2;
+  void clear_start() ;
+  ::int64_t start() const;
+  void set_start(::int64_t value);
+
+  private:
+  ::int64_t _internal_start() const;
+  void _internal_set_start(::int64_t value);
+
+  public:
+  // int64 end = 3;
+  void clear_end() ;
+  ::int64_t end() const;
+  void set_end(::int64_t value);
+
+  private:
+  ::int64_t _internal_end() const;
+  void _internal_set_end(::int64_t value);
+
+  public:
+  // int64 step = 4;
+  void clear_step() ;
+  ::int64_t step() const;
+  void set_step(::int64_t value);
+
+  private:
+  ::int64_t _internal_step() const;
+  void _internal_set_step(::int64_t value);
+
+  public:
+  // uint64 environment_size = 6;
+  void clear_environment_size() ;
+  ::uint64_t environment_size() const;
+  void set_environment_size(::uint64_t value);
+
+  private:
+  ::uint64_t _internal_environment_size() const;
+  void _internal_set_environment_size(::uint64_t value);
+
+  public:
+  // @@protoc_insertion_point(class_scope:task.TaskRequest)
+ private:
+  class _Internal;
+  friend class ::google::protobuf::internal::TcParser;
+  static const ::google::protobuf::internal::TcParseTable<
+      4, 10, 1,
+      55, 2>
+      _table_;
+
+  friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::Arena;
+  template <typename T>
+  friend class ::google::protobuf::Arena::InternalHelper;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  struct Impl_ {
+    inline explicit constexpr Impl_(
+        ::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena);
+    inline explicit Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                          ::google::protobuf::Arena* arena, const Impl_& from,
+                          const TaskRequest& from_msg);
+    ::google::protobuf::RepeatedPtrField< ::task::EnvArrayField > arrays_;
+    ::google::protobuf::internal::ArenaStringPtr environment_data_;
+    ::google::protobuf::internal::ArenaStringPtr function_name_;
+    ::google::protobuf::internal::ArenaStringPtr ir_data_;
+    ::google::protobuf::internal::ArenaStringPtr ir_format_;
+    ::int64_t task_id_;
+    ::int64_t start_;
+    ::int64_t end_;
+    ::int64_t step_;
+    ::uint64_t environment_size_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
@@ -1013,6 +1255,55 @@ inline void TaskRequest::set_allocated_ir_format(std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:task.TaskRequest.ir_format)
 }
 
+// repeated .task.EnvArrayField arrays = 10;
+inline int TaskRequest::_internal_arrays_size() const {
+  return _internal_arrays().size();
+}
+inline int TaskRequest::arrays_size() const {
+  return _internal_arrays_size();
+}
+inline void TaskRequest::clear_arrays() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.arrays_.Clear();
+}
+inline ::task::EnvArrayField* TaskRequest::mutable_arrays(int index)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable:task.TaskRequest.arrays)
+  return _internal_mutable_arrays()->Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>* TaskRequest::mutable_arrays()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_mutable_list:task.TaskRequest.arrays)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_arrays();
+}
+inline const ::task::EnvArrayField& TaskRequest::arrays(int index) const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:task.TaskRequest.arrays)
+  return _internal_arrays().Get(index);
+}
+inline ::task::EnvArrayField* TaskRequest::add_arrays() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::task::EnvArrayField* _add = _internal_mutable_arrays()->Add();
+  // @@protoc_insertion_point(field_add:task.TaskRequest.arrays)
+  return _add;
+}
+inline const ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>& TaskRequest::arrays() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_list:task.TaskRequest.arrays)
+  return _internal_arrays();
+}
+inline const ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>&
+TaskRequest::_internal_arrays() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.arrays_;
+}
+inline ::google::protobuf::RepeatedPtrField<::task::EnvArrayField>*
+TaskRequest::_internal_mutable_arrays() {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return &_impl_.arrays_;
+}
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
@@ -1207,6 +1498,102 @@ inline ::google::protobuf::Map<::int64_t, std::string>* TaskResponse::_internal_
 inline ::google::protobuf::Map<::int64_t, std::string>* TaskResponse::mutable_iteration_outputs() ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable_map:task.TaskResponse.iteration_outputs)
   return _internal_mutable_iteration_outputs();
+}
+
+// -------------------------------------------------------------------
+
+// EnvArrayField
+
+// uint32 field_index = 1;
+inline void EnvArrayField::clear_field_index() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.field_index_ = 0u;
+}
+inline ::uint32_t EnvArrayField::field_index() const {
+  // @@protoc_insertion_point(field_get:task.EnvArrayField.field_index)
+  return _internal_field_index();
+}
+inline void EnvArrayField::set_field_index(::uint32_t value) {
+  _internal_set_field_index(value);
+  // @@protoc_insertion_point(field_set:task.EnvArrayField.field_index)
+}
+inline ::uint32_t EnvArrayField::_internal_field_index() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.field_index_;
+}
+inline void EnvArrayField::_internal_set_field_index(::uint32_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.field_index_ = value;
+}
+
+// uint64 length = 2;
+inline void EnvArrayField::clear_length() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.length_ = ::uint64_t{0u};
+}
+inline ::uint64_t EnvArrayField::length() const {
+  // @@protoc_insertion_point(field_get:task.EnvArrayField.length)
+  return _internal_length();
+}
+inline void EnvArrayField::set_length(::uint64_t value) {
+  _internal_set_length(value);
+  // @@protoc_insertion_point(field_set:task.EnvArrayField.length)
+}
+inline ::uint64_t EnvArrayField::_internal_length() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.length_;
+}
+inline void EnvArrayField::_internal_set_length(::uint64_t value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.length_ = value;
+}
+
+// bytes data = 3;
+inline void EnvArrayField::clear_data() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.data_.ClearToEmpty();
+}
+inline const std::string& EnvArrayField::data() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:task.EnvArrayField.data)
+  return _internal_data();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void EnvArrayField::set_data(Arg_&& arg,
+                                                     Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.data_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
+  // @@protoc_insertion_point(field_set:task.EnvArrayField.data)
+}
+inline std::string* EnvArrayField::mutable_data() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_data();
+  // @@protoc_insertion_point(field_mutable:task.EnvArrayField.data)
+  return _s;
+}
+inline const std::string& EnvArrayField::_internal_data() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.data_.Get();
+}
+inline void EnvArrayField::_internal_set_data(const std::string& value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.data_.Set(value, GetArena());
+}
+inline std::string* EnvArrayField::_internal_mutable_data() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.data_.Mutable( GetArena());
+}
+inline std::string* EnvArrayField::release_data() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:task.EnvArrayField.data)
+  return _impl_.data_.Release();
+}
+inline void EnvArrayField::set_allocated_data(std::string* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.data_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.data_.IsDefault()) {
+    _impl_.data_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:task.EnvArrayField.data)
 }
 
 #ifdef __GNUC__
