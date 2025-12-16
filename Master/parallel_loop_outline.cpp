@@ -533,34 +533,50 @@ llvm::Function *outlineLoop(llvm::Function &F, llvm::LoopInfo &LI, llvm::Dominat
                         std::string kind = "SCALAR";
                         uint64_t elemSize = 0;
                         int lenField = -1;
+                        int64_t fixedLen = -1;
+
                         if (FTy->isPointerTy()) {
-                            kind = "POINTER_ARRAY";
-                        
                             llvm::Type *ElemTy = nullptr;
                             llvm::Value *orig = NewEnvOriginVals[k];
-                        
+
+                            // Try to recover the original element type / array length
                             if (auto *AI = llvm::dyn_cast<llvm::AllocaInst>(orig)) {
                                 ElemTy = AI->getAllocatedType();
-                            }
-                            else if (auto *GV = llvm::dyn_cast<llvm::GlobalVariable>(orig)) {
+                            } else if (auto *GV = llvm::dyn_cast<llvm::GlobalVariable>(orig)) {
                                 ElemTy = GV->getValueType();
                             }
-                        
-                            if (ElemTy)
+
+                            if (auto *ArrTy = llvm::dyn_cast_or_null<llvm::ArrayType>(ElemTy)) {
+                                // Fixed-size array like [N x T]
+                                kind = "FIXED_ARRAY";
+                                fixedLen = static_cast<int64_t>(ArrTy->getNumElements());
+                                elemSize = DL.getTypeAllocSize(ArrTy->getElementType());
+                            } else if (ElemTy &&
+                                       (ElemTy->isIntegerTy() || ElemTy->isFloatingPointTy())) {
+                                // Pointer to a single scalar value (e.g., i64*)
+                                kind = "SCALAR_PTR";
                                 elemSize = DL.getTypeAllocSize(ElemTy);
-                            else
-                                elemSize = 0;  // opaque pointer
-                        
-                            if (k + 1 < NewEnvFieldTys.size() &&
-                                NewEnvFieldTys[k + 1]->isIntegerTy()) {
-                                lenField = static_cast<int>(k + 1);
+                            } else {
+                                // Generic pointer array, possibly with a separate length field
+                                kind = "POINTER_ARRAY";
+                                if (ElemTy)
+                                    elemSize = DL.getTypeAllocSize(ElemTy);
+                                else
+                                    elemSize = 0;  // opaque pointer
+
+                                if (k + 1 < NewEnvFieldTys.size() &&
+                                    NewEnvFieldTys[k + 1]->isIntegerTy()) {
+                                    lenField = static_cast<int>(k + 1);
+                                }
                             }
                         }
+
                         meta << "    {\"index\": " << k
                              << ", \"offset\": " << offset
                              << ", \"kind\": \"" << kind << "\""
                              << ", \"elem_size\": " << elemSize
                              << ", \"len_field\": " << lenField
+                             << ", \"fixed_length\": " << fixedLen
                              << "}";
                         if (k + 1 < NewEnvFieldTys.size()) meta << ",";
                         meta << "\n";

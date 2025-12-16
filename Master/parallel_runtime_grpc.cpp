@@ -32,14 +32,74 @@ static uint64_t g_current_env_size = 0;
 struct EnvFieldMeta {
     int index = -1;
     uint64_t offset = 0;
-    std::string kind; // "SCALAR" or "POINTER_ARRAY"
+    std::string kind; // "SCALAR", "POINTER_ARRAY", "FIXED_ARRAY", "SCALAR_PTR", ...
     uint64_t elem_size = 0;
     int len_field = -1; // index of length field (scalar), or -1 if unknown
+    int64_t fixed_length = -1; // for fixed-size arrays, else -1
 };
 
 static std::vector<EnvFieldMeta> g_env_fields;
 static uint64_t g_env_struct_size = 0;
 static std::once_flag g_env_meta_once;
+
+// Forward declaration so debug_dump_env can call it before its full definition.
+static void load_env_metadata();
+
+// Debug helper to pretty-print env contents using metadata.
+static void debug_dump_env(const std::string& label, void* env, size_t env_size) {
+    if (!env || env_size == 0) {
+        std::cerr << "[LATTICE] " << label << ": env is null or size=0\n";
+        return;
+    }
+
+    load_env_metadata();
+    if (g_env_fields.empty()) {
+        std::cerr << "[LATTICE] " << label << ": no env metadata loaded\n";
+        return;
+    }
+
+    std::cerr << "[LATTICE] " << label << ": env dump (size=" << env_size << ")\n";
+
+    for (const auto& meta : g_env_fields) {
+        // Dump FIXED_ARRAY of int32_t
+        if (meta.kind == "FIXED_ARRAY" &&
+            meta.fixed_length > 0 &&
+            meta.elem_size == 4) {
+            if (meta.offset + sizeof(uintptr_t) > env_size) continue;
+
+            uintptr_t ptr_val = 0;
+            memcpy(&ptr_val,
+                   static_cast<char*>(env) + meta.offset,
+                   sizeof(uintptr_t));
+            if (ptr_val == 0) continue;
+
+            auto* arr = reinterpret_cast<const int32_t*>(ptr_val);
+            uint64_t len = static_cast<uint64_t>(meta.fixed_length);
+
+            std::cerr << "  [field " << meta.index << "] FIXED_ARRAY<int32>("
+                      << "len=" << len << "):";
+            for (uint64_t i = 0; i < len; ++i) {
+                std::cerr << " " << arr[i];
+            }
+            std::cerr << "\n";
+        }
+        // Dump SCALAR_PTR assumed as int64_t
+        else if (meta.kind == "SCALAR_PTR" &&
+                 meta.elem_size == 8) {
+            if (meta.offset + sizeof(uintptr_t) > env_size) continue;
+
+            uintptr_t ptr_val = 0;
+            memcpy(&ptr_val,
+                   static_cast<char*>(env) + meta.offset,
+                   sizeof(uintptr_t));
+            if (ptr_val == 0) continue;
+
+            auto* p = reinterpret_cast<const int64_t*>(ptr_val);
+            std::cerr << "  [field " << meta.index << "] SCALAR_PTR<int64>: "
+                      << *p << "\n";
+        }
+    }
+}
 
 // Read environment size from file written by loop outliner pass
 static uint64_t read_env_size_from_file() {
@@ -65,10 +125,13 @@ static uint64_t read_env_size_from_file() {
     return last;
 }
 
-// Read env metadata JSON emitted by the outliner (/tmp/env_metadata.json)
+// Read env metadata JSON emitted by the outliner
 static void load_env_metadata() {
     std::call_once(g_env_meta_once, []() {
-        const char* path = "/home/niloy/vs_code/course/cse299/Lattice/Worker/env_metadata.json";
+        // Allow overriding via ENV_METADATA_PATH; otherwise default to Worker folder.
+        const char* env_override = std::getenv("ENV_METADATA_PATH");
+        const char* default_path = "/home/niloy/vs_code/course/cse299/Lattice/Worker/env_metadata.json";
+        const char* path = (env_override && *env_override) ? env_override : default_path;
         std::ifstream ifs(path);
         if (!ifs.is_open()) {
             std::cerr << "env meta: cannot open " << path << "\n";
@@ -91,6 +154,7 @@ static void load_env_metadata() {
                 if (f.isMember("kind")) m.kind = f["kind"].asString();
                 if (f.isMember("elem_size")) m.elem_size = f["elem_size"].asUInt64();
                 if (f.isMember("len_field")) m.len_field = f["len_field"].asInt();
+                if (f.isMember("fixed_length")) m.fixed_length = f["fixed_length"].asInt64();
                 g_env_fields.push_back(m);
             }
         }
@@ -238,6 +302,16 @@ bool execute_task_on_worker(
     request.set_start(start);
     request.set_end(end);
     request.set_step(step);
+
+    // Debug: show env before sending to this worker/partition
+    {
+        std::stringstream label;
+        label << "master before task " << task_id
+              << " [worker=" << worker_address
+              << ", range=" << start << ":" << end << ":" << step << "]";
+        debug_dump_env(label.str(), env, env_size);
+    }
+
     request.set_environment_data(serialize_environment(env, env_size));
     request.set_environment_size(env_size);
     // Call the LLVM-generated wrapper(i64, i8*) instead of the raw outlined function.
@@ -252,22 +326,31 @@ bool execute_task_on_worker(
 
     // Attach logical array payloads using env metadata
     load_env_metadata();
-    // map field index to meta for quick access to len field offsets
+    // Attach arrays/buffers for POINTER_ARRAY, FIXED_ARRAY and SCALAR_PTR fields
     for (const auto& meta : g_env_fields) {
-        if (meta.kind != "POINTER_ARRAY") continue;
-        if (meta.len_field < 0) continue;
+        if (meta.elem_size == 0) continue;
 
-        // Read length from env using len_field's offset (assume 64-bit length)
         uint64_t len = 0;
-        auto len_it = std::find_if(g_env_fields.begin(), g_env_fields.end(),
-                                   [&](const EnvFieldMeta& m){ return m.index == meta.len_field; });
-        if (len_it != g_env_fields.end()) {
-            size_t len_off = len_it->offset;
-            if (len_off + sizeof(uint64_t) <= env_size) {
-                memcpy(&len, static_cast<char*>(env) + len_off, sizeof(uint64_t));
+        if (meta.kind == "POINTER_ARRAY") {
+            if (meta.len_field < 0) continue;
+            auto len_it = std::find_if(g_env_fields.begin(), g_env_fields.end(),
+                                       [&](const EnvFieldMeta& m){ return m.index == meta.len_field; });
+            if (len_it != g_env_fields.end()) {
+                size_t len_off = len_it->offset;
+                if (len_off + sizeof(uint64_t) <= env_size) {
+                    memcpy(&len, static_cast<char*>(env) + len_off, sizeof(uint64_t));
+                }
             }
+        } else if (meta.kind == "FIXED_ARRAY") {
+            if (meta.fixed_length > 0) len = static_cast<uint64_t>(meta.fixed_length);
+        } else if (meta.kind == "SCALAR_PTR") {
+            // Single scalar pointed-to value; treat as length-1 buffer
+            len = 1;
+        } else {
+            continue;
         }
-        if (len == 0 || meta.elem_size == 0) continue;
+
+        if (len == 0) continue;
 
         // Read pointer value from env at meta.offset
         uintptr_t ptr_val = 0;
@@ -276,9 +359,9 @@ bool execute_task_on_worker(
         }
         if (ptr_val == 0) continue;
 
-        // Copy array data
         const char* src = reinterpret_cast<const char*>(ptr_val);
         uint64_t bytes = len * meta.elem_size;
+
         try {
             task::EnvArrayField* arr = request.add_arrays();
             arr->set_field_index(meta.index);

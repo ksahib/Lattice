@@ -28,14 +28,74 @@ using outlined_fn_t = void (*)(int64_t, void*);
 struct EnvFieldMeta {
     int index = -1;
     uint64_t offset = 0;
-    std::string kind; // "SCALAR" or "POINTER_ARRAY"
+    std::string kind; // "SCALAR", "POINTER_ARRAY", "FIXED_ARRAY", "SCALAR_PTR", ...
     uint64_t elem_size = 0;
     int len_field = -1;
+    int64_t fixed_length = -1;
 };
 
 static std::vector<EnvFieldMeta> g_env_fields;
 static uint64_t g_env_struct_size = 0;
 static std::once_flag g_env_meta_once;
+
+// Forward declaration so debug_dump_env_worker can call it.
+static void load_env_metadata();
+
+// Debug helper to pretty-print env contents using metadata on the worker.
+static void debug_dump_env_worker(const std::string& label, void* env, size_t env_size) {
+    if (!env || env_size == 0) {
+        std::cerr << "[WORKER] " << label << ": env is null or size=0\n";
+        return;
+    }
+
+    load_env_metadata();
+    if (g_env_fields.empty()) {
+        std::cerr << "[WORKER] " << label << ": no env metadata loaded\n";
+        return;
+    }
+
+    std::cerr << "[WORKER] " << label << ": env dump (size=" << env_size << ")\n";
+
+    for (const auto& meta : g_env_fields) {
+        // Dump FIXED_ARRAY of int32_t
+        if (meta.kind == "FIXED_ARRAY" &&
+            meta.fixed_length > 0 &&
+            meta.elem_size == 4) {
+            if (meta.offset + sizeof(uintptr_t) > env_size) continue;
+
+            uintptr_t ptr_val = 0;
+            memcpy(&ptr_val,
+                   static_cast<char*>(env) + meta.offset,
+                   sizeof(uintptr_t));
+            if (ptr_val == 0) continue;
+
+            auto* arr = reinterpret_cast<const int32_t*>(ptr_val);
+            uint64_t len = static_cast<uint64_t>(meta.fixed_length);
+
+            std::cerr << "  [field " << meta.index << "] FIXED_ARRAY<int32>("
+                      << "len=" << len << "):";
+            for (uint64_t i = 0; i < len; ++i) {
+                std::cerr << " " << arr[i];
+            }
+            std::cerr << "\n";
+        }
+        // Dump SCALAR_PTR assumed as int64_t
+        else if (meta.kind == "SCALAR_PTR" &&
+                 meta.elem_size == 8) {
+            if (meta.offset + sizeof(uintptr_t) > env_size) continue;
+
+            uintptr_t ptr_val = 0;
+            memcpy(&ptr_val,
+                   static_cast<char*>(env) + meta.offset,
+                   sizeof(uintptr_t));
+            if (ptr_val == 0) continue;
+
+            auto* p = reinterpret_cast<const int64_t*>(ptr_val);
+            std::cerr << "  [field " << meta.index << "] SCALAR_PTR<int64>: "
+                      << *p << "\n";
+        }
+    }
+}
 
 static void load_env_metadata() {
     std::call_once(g_env_meta_once, []() {
@@ -71,6 +131,7 @@ static void load_env_metadata() {
                 if (f.isMember("kind")) m.kind = f["kind"].asString();
                 if (f.isMember("elem_size")) m.elem_size = f["elem_size"].asUInt64();
                 if (f.isMember("len_field")) m.len_field = f["len_field"].asInt();
+                if (f.isMember("fixed_length")) m.fixed_length = f["fixed_length"].asInt64();
                 g_env_fields.push_back(m);
             }
         }
@@ -97,7 +158,7 @@ class TaskServiceImpl final : public TaskService::Service {
             memcpy(env, request->environment_data().data(), 
                    std::min(env_size, request->environment_data().size()));
 
-            // Reconstruct pointer arrays using metadata and request.arrays
+            // Reconstruct pointer arrays/scalars using metadata and request.arrays
             load_env_metadata();
             std::map<int, const task::EnvArrayField*> arrayMap;
             for (int i = 0; i < request->arrays_size(); ++i) {
@@ -105,7 +166,10 @@ class TaskServiceImpl final : public TaskService::Service {
                 arrayMap[a.field_index()] = &a;
             }
             for (const auto& meta : g_env_fields) {
-                if (meta.kind != "POINTER_ARRAY") continue;
+                if (meta.kind != "POINTER_ARRAY" &&
+                    meta.kind != "FIXED_ARRAY" &&
+                    meta.kind != "SCALAR_PTR")
+                    continue;
                 auto it = arrayMap.find(meta.index);
                 if (it == arrayMap.end()) {
                     continue;
@@ -122,6 +186,15 @@ class TaskServiceImpl final : public TaskService::Service {
                     uintptr_t p = reinterpret_cast<uintptr_t>(buf);
                     memcpy(static_cast<char*>(env) + meta.offset, &p, sizeof(uintptr_t));
                 }
+            }
+
+            // Debug: dump env after reconstruction, before executing iterations
+            {
+                std::stringstream label;
+                label << "before ExecuteTask task_id=" << request->task_id()
+                      << " range=" << request->start() << ":"
+                      << request->end() << ":" << request->step();
+                debug_dump_env_worker(label.str(), env, env_size);
             }
             
             // --- Compile IR on worker and load outlined function ---
@@ -172,8 +245,21 @@ class TaskServiceImpl final : public TaskService::Service {
             int64_t end = request->end();
             int64_t step = request->step();
             
+            std::cerr << "[WORKER] ExecuteTask task_id=" << request->task_id()
+                      << " range=" << start << ":" << end << ":" << step
+                      << " function=" << request->function_name() << "\n";
+
             for (int64_t i = start; i < end; i += step) {
+                std::cerr << "[WORKER]   iter " << i << "\n";
                 outlined_fn(i, env);
+            }
+
+            // Debug: dump env after executing all iterations for this task
+            {
+                std::stringstream label;
+                label << "after ExecuteTask task_id=" << request->task_id()
+                      << " range=" << start << ":" << end << ":" << step;
+                debug_dump_env_worker(label.str(), env, env_size);
             }
             
             // Serialize updated environment as result
