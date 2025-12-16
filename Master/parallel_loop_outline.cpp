@@ -177,7 +177,14 @@ llvm::Function *outlineLoop(llvm::Function &F, llvm::LoopInfo &LI, llvm::Dominat
         {
             Start = AR->getStart();
             Step = AR->getStepRecurrence(SE);
-            End = SE.getAddExpr(Start, SE.getMulExpr(Step, BackedgeCount));
+
+            // BackedgeCount is the number of times the backedge is taken.
+            // TripCount (number of loop iterations) is BackedgeCount + 1.
+            // Our runtime expects an end-exclusive bound, so:
+            //   End = Start + Step * TripCount.
+            const llvm::SCEV *One = SE.getOne(BackedgeCount->getType());
+            const llvm::SCEV *TripCount = SE.getAddExpr(BackedgeCount, One);
+            End = SE.getAddExpr(Start, SE.getMulExpr(Step, TripCount));
         }
         llvm::SCEVExpander Exp(SE, F.getParent()->getDataLayout(), "scevexp");
         StartV = Exp.expandCodeFor(Start, indvar->getType(), Preheader->getTerminator());

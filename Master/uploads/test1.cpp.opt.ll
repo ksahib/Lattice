@@ -18,7 +18,7 @@ define dso_local noundef i32 @main() local_unnamed_addr #0 {
   store ptr %1, ptr %env_gep, align 8
   %env_gep1 = getelementptr inbounds nuw %env.struct, ptr %env_raw, i32 0, i32 1
   store ptr %.loc, ptr %env_gep1, align 8
-  call void @parallel_for_runtime(i64 0, i64 4, i64 1, ptr @wrapper, ptr %env_raw)
+  call void @parallel_for_runtime(i64 0, i64 5, i64 1, ptr @wrapper, ptr %env_raw)
   br label %2
 
 2:                                                ; preds = %0
