@@ -1,4 +1,4 @@
-Distributed Compiler-Driven Computing Platform
+Distributed Compiler-Driven Computing Platform:
 
 
 This project presents a compiler-assisted, hardware-architecture-agnostic distributed computing platform for C++ programs. 
